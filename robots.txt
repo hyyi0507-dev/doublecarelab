@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin.html
 Disallow: /guide.html
 
-Sitemap: https://doublecarelab.vercel.app/sitemap.xml
+Sitemap: https://www.15care.shop/sitemap.xml
