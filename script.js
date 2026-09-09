@@ -39,6 +39,19 @@
     }, HOLD + FADE);
   } else if (slides.length) { slides[0].classList.add('is-on'); }
 
+  /* ③-2 대표 사진 3장 넘김 — 4초 보여주고 0.8초 덮기, 설명도 같이 바뀐다 */
+  var os = document.querySelectorAll('.owner-slides img'), ocap = document.getElementById('ownerCap');
+  if (os.length > 1 && !reduce) {
+    var oi = 0, oz = 1, OHOLD = 4000, OFADE = 800;
+    os[0].classList.add('is-on'); os[0].style.zIndex = oz;
+    setInterval(function () {
+      var prev = os[oi]; oi = (oi + 1) % os.length; var next = os[oi];
+      next.style.zIndex = ++oz; next.classList.add('is-on');
+      if (ocap && next.dataset.cap) ocap.textContent = next.dataset.cap;
+      setTimeout(function () { prev.classList.remove('is-on'); }, OFADE + 50);
+    }, OHOLD + OFADE);
+  } else if (os.length) { os[0].classList.add('is-on'); }
+
   /* ④ FAQ 하나만 */
   document.querySelectorAll('.faq').forEach(function (g) {
     var items = g.querySelectorAll('details.fold');
