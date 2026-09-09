@@ -209,16 +209,16 @@ figure.owner figcaption{margin-top:12px;font-size:13.5px;color:var(--muted);lett
 @media(max-width:640px){.plist li{grid-template-columns:1fr;gap:8px;padding:20px 0}}
 /* 제품 페이지 — 사진 있는 카드 격자 */
 .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin:32px 0 0;padding:0;list-style:none}
-.pc{background:var(--bg2);border:1px solid var(--line);border-radius:18px;overflow:hidden}
-.pc img{aspect-ratio:1/1;object-fit:cover;width:100%;background:#F6F3EE}
-.pc-in{padding:20px 22px 24px}
-.pc h3{font-family:var(--serif);font-size:21px;font-weight:600;color:var(--ink);margin:0 0 6px}
-.pc .ty{font-size:12.5px;color:var(--muted);margin:0 0 10px;line-height:1.6}
-.pc .ing{font-size:14px;color:var(--body);margin:0 0 12px;line-height:1.7}
-.pc .fx{font-size:14px;color:var(--ink);background:var(--bg-warm);border-radius:10px;padding:12px 14px;margin:0 0 12px;line-height:1.7}
-.pc .fx span{display:block}.pc .fx span+span{margin-top:4px}
-.pc .yr{font-size:13px;color:var(--gold-ink);margin:0;line-height:1.6}
-.pc .warn{font-size:12.5px;color:var(--muted);margin:8px 0 0;line-height:1.6}
+.pc{background:#fff;border:1px solid var(--line-ink);border-radius:18px;overflow:hidden;box-shadow:0 14px 34px rgba(27,25,22,.08)}
+.pc img{aspect-ratio:1/1;object-fit:cover;width:100%;background:#fff}
+.pc-in{padding:22px 24px 26px;border-top:1px solid var(--line)}
+.pc h3{font-family:var(--serif);font-size:23px;font-weight:600;color:var(--ink);margin:0 0 6px}
+.pc .ty{font-size:13.5px;color:var(--body);margin:0 0 12px;line-height:1.6}
+.pc .ing{font-size:15.5px;color:var(--ink);margin:0 0 14px;line-height:1.7}
+.pc .fx{font-size:15px;font-weight:600;color:var(--ink);background:var(--gold-soft);border-radius:10px;padding:13px 15px;margin:0 0 14px;line-height:1.7}
+.pc .fx span{display:block}.pc .fx span+span{margin-top:5px}
+.pc .yr{font-size:14px;font-weight:600;color:var(--gold-ink);margin:0;line-height:1.6}
+.pc .warn{font-size:13px;color:var(--body);margin:8px 0 0;line-height:1.6}
 @media(max-width:960px){.pgrid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.pgrid{grid-template-columns:1fr;gap:18px}}
 
