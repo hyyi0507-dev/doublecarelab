@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>홈페이지 고치는 법 · 더블케어랩</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root{
+    --bg:#FFFFFF; --bg-warm:#F6F5F2; --ink:#111111; --body:#45443F; --muted:#58574F;
+    --faint:#6E6D66; --line:#E6E4DF; --key:#2E4C82; --warn:#8A1F11; --hold:#C08A00; --ok:#2A6B45;
+    --sans:'Pretendard Variable',Pretendard,system-ui,-apple-system,'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg-warm);color:var(--body);font-family:var(--sans);
+       font-size:17px;line-height:1.9;letter-spacing:-.011em;word-break:keep-all;
+       -webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:720px;margin:0 auto;padding:0 20px;}
+  a{color:var(--key);}
+  code{background:#fff;border:1px solid var(--line);border-radius:6px;padding:2px 8px;
+       font-size:.92em;word-break:break-all;}
+  kbd{background:var(--ink);color:#fff;border-radius:6px;padding:3px 9px;font-size:.86em;
+      font-family:inherit;font-weight:600;white-space:nowrap;}
+
+  header{background:var(--ink);color:#fff;padding:36px 0 32px;}
+  header h1{font-size:clamp(27px,5.4vw,40px);line-height:1.3;margin:0 0 8px;letter-spacing:-.02em;}
+  header p{margin:0;color:#B9B7B0;font-size:16px;}
+
+  section{padding:34px 0;border-top:1px solid var(--line);}
+  section:first-of-type{border-top:0;}
+  h2{font-size:clamp(21px,3.4vw,27px);color:var(--ink);margin:0 0 6px;letter-spacing:-.02em;line-height:1.35;}
+  h2 .n{color:var(--faint);font-size:.68em;font-weight:600;margin-right:8px;}
+  h3{font-size:18px;color:var(--ink);margin:24px 0 6px;}
+  p{margin:0 0 14px;}
+  .sub{color:var(--faint);font-size:15.5px;margin:-2px 0 16px;}
+
+  .box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:16px 0;}
+  .box.key{border:2px solid var(--key);}
+  .box.warn{background:#FBEFEC;border-color:#E7C9C2;}
+  .box.warn h3,.box.warn b{color:var(--warn);}
+  .box.hold{background:#FDF7E6;border-color:#EBD9A6;}
+  .box.hold b{color:#6B4E00;}
+  .box>:last-child{margin-bottom:0;}
+
+  ol,ul{margin:0 0 14px;padding-left:22px;}
+  li{margin-bottom:10px;}
+  ol.big{counter-reset:s;list-style:none;padding-left:0;}
+  ol.big>li{counter-increment:s;position:relative;padding-left:46px;margin-bottom:18px;}
+  ol.big>li::before{content:counter(s);position:absolute;left:0;top:2px;width:32px;height:32px;
+    background:var(--key);color:#fff;border-radius:50%;display:flex;align-items:center;
+    justify-content:center;font-weight:700;font-size:17px;}
+  ol.big>li b{color:var(--ink);}
+
+  dl.kv{margin:0;}
+  dl.kv>div{display:flex;gap:16px;padding:13px 0;border-top:1px solid var(--line);}
+  dl.kv>div:first-child{border-top:0;}
+  dt{width:34%;flex:none;color:var(--faint);font-size:15.5px;font-weight:600;margin:0;}
+  dd{margin:0;flex:1;}
+  @media (max-width:26rem){
+    dl.kv>div{display:block;}
+    dt{width:auto;margin-bottom:2px;}
+  }
+
+  .copy{font:600 15px/1 var(--sans);border:1px solid var(--line);background:#fff;color:var(--ink);
+        border-radius:8px;padding:11px 14px;cursor:pointer;margin-left:6px;}
+  .go{display:inline-block;background:var(--key);color:#fff;text-decoration:none;font-weight:600;
+      border-radius:10px;padding:15px 22px;margin-top:6px;}
+  footer{background:var(--ink);color:#B9B7B0;padding:28px 0 40px;font-size:15px;}
+  footer a{color:#fff;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>홈페이지 고치는 법</h1>
+    <p>더블케어랩 · 더조은 15분샵 인천 부평점</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2>딱 세 가지만 기억하시면 됩니다</h2>
+  <p class="sub">나머지는 몰라도 됩니다. 이 세 가지로 글과 사진이 전부 바뀝니다.</p>
+
+  <ol class="big">
+    <li>
+      <b>고치는 곳으로 들어갑니다.</b><br>
+      홈페이지 주소 뒤에 <code>/admin.html</code> 을 붙이시면 됩니다.
+      <div style="margin:10px 0 0;">
+        <code id="adminUrl">홈페이지주소/admin.html</code>
+        <button class="copy" id="copyBtn" type="button">주소 복사</button>
+      </div>
+      <p class="sub" style="margin-top:8px;">
+        휴대폰이면 이 주소를 첫 화면에 추가해 두시면 편합니다.
+      </p>
+    </li>
+    <li>
+      <b>비밀번호는 <span style="font-size:1.15em;">1017</span> 입니다.</b><br>
+      전화번호 뒷자리입니다. 「백업·되돌리기」에서 바꾸실 수 있습니다.
+    </li>
+    <li>
+      <b>다 고치시면 「웹에 반영하기」를 한 번 누릅니다.</b><br>
+      <span style="color:var(--warn);font-weight:600;">이걸 안 누르시면 손님 화면은 그대로입니다.</span>
+      고치신 내용이 대표님 컴퓨터에만 남아 있게 됩니다.
+    </li>
+  </ol>
+</section>
+
+<section>
+  <h2><span class="n">1</span>글 고치기</h2>
+  <p class="sub">홈페이지의 글 <b>252칸</b>을 전부 고치실 수 있습니다. 다섯 페이지 모두입니다.</p>
+
+  <div class="box">
+    <h3 style="margin-top:0;">고치는 순서</h3>
+    <ol>
+      <li>위쪽 <b>「글 고치기」</b>를 누릅니다.</li>
+      <li>제목 줄(예: <b>2. 15분 케어</b>)을 누르면 그 안의 글이 펼쳐집니다.</li>
+      <li>고치실 칸을 마우스로 누르고 <b>그냥 고쳐 쓰시면 됩니다.</b></li>
+    </ol>
+    <p><b>저장 단추는 없습니다.</b> 타자를 멈추거나 다른 곳을 누르면 저절로 저장됩니다.
+       고치신 칸은 <b style="color:var(--hold);">노란 테두리</b>로 남습니다.</p>
+  </div>
+
+  <h3>찾기 어려우실 때</h3>
+  <dl class="kv">
+    <div><dt>글이 안 보인다</dt>
+         <dd>맨 위 <b>찾기 칸</b>에 그 글의 한 낱말을 넣어 보세요 (예: 주차, 상담, 15분).</dd></div>
+    <div><dt>어느 페이지인지 모르겠다</dt>
+         <dd>찾기 칸 왼쪽에서 <b>페이지를 고르시면</b> 그 페이지 글만 나옵니다.</dd></div>
+    <div><dt>내가 뭘 고쳤더라</dt>
+         <dd><b>「고친 곳만 보기」</b>에 체크하시면 고치신 곳만 나옵니다.</dd></div>
+    <div><dt>화면 보면서 고치고 싶다</dt>
+         <dd><b>「도움말」 → 「홈페이지 화면에서 바로 고치기」</b>에서 페이지를 고르시면,
+             홈페이지를 보면서 그 자리에서 바로 고치실 수 있습니다.</dd></div>
+  </dl>
+</section>
+
+<section>
+  <h2><span class="n">2</span>사진 바꾸기</h2>
+  <p class="sub">사진 <b>3장</b>을 바꾸실 수 있습니다 — 기기 사진 · 제품 사진 · 간판 사진.</p>
+  <div class="box">
+    <ol style="margin-bottom:0;">
+      <li>위쪽 <b>「사진 바꾸기」</b>를 누릅니다.</li>
+      <li>바꾸실 사진 아래 <b>「사진 고르기」</b>를 누릅니다.</li>
+      <li>휴대폰이나 컴퓨터에 있는 사진을 고르시면 끝입니다. 큰 사진은 저절로 줄여서 넣습니다.</li>
+    </ol>
+  </div>
+  <div class="box hold">
+    <b>저장 공간이 거의 찼다고 나오면</b><br>
+    사진을 여러 장 바꾸시면 자리가 모자랄 수 있습니다.
+    그럴 때는 「웹에 반영하기」를 한 번 누르신 뒤,
+    바꾸신 사진 몇 장을 「되돌리기」 해 주시면 자리가 납니다.
+    <b>반영한 뒤에 되돌리셔도 홈페이지의 사진은 그대로 있습니다.</b>
+  </div>
+  <p><b>사진을 새로 넣거나 빼는 것</b>(장수를 늘리고 줄이는 것)은 여기서 안 됩니다 —
+     만든 곳에 말씀해 주세요.</p>
+</section>
+
+<section>
+  <h2><span class="n">3</span>전화번호·주소</h2>
+  <p class="sub">여기서 한 번만 고치시면 다섯 페이지가 함께 바뀝니다. 글 고치기에서 따로 찾지 마세요.</p>
+  <dl class="kv">
+    <div><dt>전화번호</dt>
+         <dd>모든 전화 단추와 맨 아래 사업자 정보가 함께 바뀝니다.</dd></div>
+    <div><dt>매장 주소</dt>
+         <dd>「오시는 길」의 주소와 네이버 지도·카카오맵 링크가 함께 바뀝니다.</dd></div>
+  </dl>
+  <div class="box warn">
+    <h3 style="margin-top:0;">주소는 아직 확정된 것이 아닙니다</h3>
+    <p>지금 적힌 <b>인천광역시 부평구 안남로63번길 4 (부평동) 2층</b> 은
+       당근 비즈프로필과 본사 목록에서 찾은 주소입니다.
+       <b>대표님께서 한 번 확인해 주셔야 합니다.</b></p>
+    <p style="margin-bottom:0;">그리고 <b>주소를 정말로 바꾸실 때는 만든 곳에 꼭 알려 주십시오.</b>
+       화면의 주소와 지도 링크는 여기서 바뀌지만,
+       <b>검색 결과에 나오는 소개 글과 가게 정보 두 곳은 자동으로 바뀌지 않습니다.</b>
+       그 둘까지 다섯 곳을 함께 맞춰야 손님이 엉뚱한 곳으로 가지 않습니다.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">4</span>웹에 반영하기 — 가장 중요합니다</h2>
+  <p class="sub">고치기만 해서는 손님 화면이 바뀌지 않습니다. 이 단추를 눌러야 나갑니다.</p>
+
+  <div class="box key">
+    <ol style="margin-bottom:0;">
+      <li>위쪽 <b>「웹에 반영하기」</b>를 누릅니다.</li>
+      <li>무엇이 반영을 기다리는지 보여 줍니다 — 글 몇 곳, 사진 몇 장.</li>
+      <li><b>「쓰면 안 되는 말 검사」</b>를 한 번 누릅니다. (아래 5번 참고)</li>
+      <li>그 아래 <b>확인 칸에 체크</b>하시면 파란 단추가 열립니다.</li>
+      <li><b>「웹에 반영하기」</b>를 누르고, 「반영했습니다」가 나올 때까지 기다립니다.</li>
+    </ol>
+  </div>
+
+  <div class="box hold">
+    <b>홈페이지가 그대로 보이시나요?</b><br>
+    실제로 바뀌기까지 <b>1~2분</b> 걸립니다. 그 뒤에도 그대로면
+    컴퓨터가 옛날 화면을 기억하고 있는 것입니다. 키보드에서
+    <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd> 을 함께 눌러 주세요.
+    (맥은 <kbd>⌘</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>, 휴대폰은 브라우저를 완전히 닫았다가 다시 여세요.)
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">5</span>쓰면 안 되는 말</h2>
+  <p class="sub">까다롭게 구는 것이 아니라, 건강기능식품은 쓸 수 있는 말이 법으로 정해져 있습니다.</p>
+
+  <div class="box warn">
+    <h3 style="margin-top:0;">이런 말은 넣지 마세요</h3>
+    <ul style="margin-bottom:0;">
+      <li><b>질병 이름</b> — 당뇨·혈압·암·아토피·관절염·변비 <span style="color:var(--warn);">(가장 무겁습니다)</span></li>
+      <li><b>몸에서 무엇이 빠진다는 말</b> — 디톡스·독소·노폐물·배출·면역력·혈액순환</li>
+      <li><b>살·체형</b> — 다이어트·체지방·내장지방·감량</li>
+      <li><b>의약품처럼 읽히는 말</b> — 치료·완치·예방·효능·효과·낫습니다</li>
+      <li><b>단정·최상급</b> — 100%·천연·부작용 없는·최고·1위·최초·유일</li>
+    </ul>
+  </div>
+
+  <p>이런 말을 쓰시면 <b>빨간 경고</b>가 뜹니다.
+     <b>막지는 않습니다</b> — 대표님께서 보시고 판단하시라는 뜻입니다.
+     다만 그대로 두고 반영하시면 그건 대표님 책임이 됩니다.</p>
+
+  <h3>절대 지우면 안 되는 두 가지</h3>
+  <dl class="kv">
+    <div><dt>「…에 도움을<br>줄 수 있음」</dt>
+         <dd>제품 상자 뒷면에 적힌 그대로만 쓸 수 있는 문장입니다.
+             <b>어미를 지우거나 쉬운 말로 풀어 쓰면 법 위반입니다.</b>
+             지우시면 경고가 뜹니다.</dd></div>
+    <div><dt>맨 아래<br>법정 고지문</dt>
+         <dd>「본 제품은 질병의 예방 및 치료를 위한 의약품이 아닙니다」,
+             「의료기기가 아닌 미용기기입니다」 두 줄입니다.
+             <b>비우시면 원래 문장으로 저절로 되돌아갑니다.</b> 걱정 안 하셔도 됩니다.</dd></div>
+  </dl>
+</section>
+
+<section>
+  <h2><span class="n">6</span>잘 안 될 때</h2>
+
+  <dl class="kv">
+    <div><dt>저장이 안 됩니다</dt>
+         <dd><b>「저장 공간이 부족합니다」</b>가 나온 것이라면 사진을 너무 많이 바꾸신 것입니다.
+             「웹에 반영하기」를 한 번 누르신 뒤, 사진 몇 장을 「되돌리기」 해 주세요.<br>
+             그 밖의 경우에는 브라우저를 완전히 닫았다가 다시 열어 보세요.</dd></div>
+    <div><dt>화면이 안 바뀝니다</dt>
+         <dd><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd> 을 눌러 주세요.
+             컴퓨터가 옛 화면을 기억하고 있어서 그렇습니다.
+             그래도 그대로면 1~2분 기다렸다가 다시 열어 보세요.</dd></div>
+    <div><dt>「반영하기」가<br>안 됩니다</dt>
+         <dd>빨간 글씨가 나오면 <b>그 글씨를 그대로 찍어서</b> 만든 곳에 보내 주세요.
+             주소가 <code>file:///</code> 로 시작하면 파일을 열어 보고 계신 것입니다 —
+             인터넷 주소로 열어 주세요.</dd></div>
+    <div><dt>잘못 고쳤습니다</dt>
+         <dd>칸마다 <b>「이 칸 처음으로」</b>가 있습니다.
+             전부 돌리시려면 「백업·되돌리기」의 <b>「전부 처음으로 되돌리기」</b>를 누르시고,
+             그 뒤에 <b>「웹에 반영하기」를 한 번 더</b> 눌러 주세요.</dd></div>
+    <div><dt>비밀번호를<br>잊었습니다</dt>
+         <dd>처음 비밀번호는 <b>1017</b> 입니다. 바꾸셨는데 잊으셨다면 만든 곳에 연락 주세요.</dd></div>
+  </dl>
+</section>
+
+<section>
+  <h2><span class="n">7</span>백업 — 한 달에 한 번이면 충분합니다</h2>
+  <p>고치신 내용은 <b>대표님 컴퓨터의 브라우저</b>에 저장됩니다.
+     인터넷 사용 기록을 지우시면 함께 사라집니다.</p>
+  <p>많이 고치신 날은 <b>「백업·되돌리기」 → 「백업 받기」</b>를 눌러 파일 하나를 받아 두세요.
+     나중에 그 파일을 <b>「백업 불러오기」</b>로 넣으시면 그대로 돌아옵니다.</p>
+  <div class="box hold">
+    <b>이미 「웹에 반영하기」를 누르신 내용은 안 사라집니다.</b><br>
+    반영한 내용은 홈페이지 쪽에 저장되어 있으니, 컴퓨터가 바뀌어도 손님 화면은 그대로입니다.
+    백업은 <b>아직 반영하지 않은 것</b>을 지키기 위한 것입니다.
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">8</span>이건 만든 곳에 말씀해 주세요</h2>
+  <ul>
+    <li>사진을 <b>새로 넣거나 빼는</b> 것 (바꾸는 건 대표님이 하실 수 있습니다)</li>
+    <li>메뉴·페이지를 <b>더하거나 없애는</b> 것</li>
+    <li><b>주소를 정말로 바꾸는</b> 것 — 검색에 나오는 글까지 다섯 곳을 함께 고쳐야 합니다</li>
+    <li>카카오톡 채널을 만드셨을 때 — 카톡 단추를 붙여 드립니다</li>
+    <li>건강기능식품 <b>일반판매업 신고번호</b>를 받으셨을 때 — 맨 아래에 적어야 합니다</li>
+    <li>비밀번호를 <b>모든 컴퓨터에서</b> 바꾸고 싶으실 때</li>
+  </ul>
+  <a class="go" href="admin.html">고치는 곳으로 가기</a>
+</section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    이 안내는 검색에 나오지 않습니다. 주소를 아는 사람만 볼 수 있습니다.<br>
+    더블케어랩 · 더조은 15분샵 인천 부평점 — <a href="index.html">홈페이지 보기</a>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var el = document.getElementById('adminUrl');
+  var btn = document.getElementById('copyBtn');
+  var url = (location.protocol === 'file:')
+    ? '홈페이지주소/admin.html'
+    : location.origin + '/admin.html';
+  el.textContent = url;
+  btn.onclick = function () {
+    var done = function () {
+      var old = btn.textContent;
+      btn.textContent = '복사했습니다';
+      setTimeout(function () { btn.textContent = old; }, 1600);
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(url).then(done, function () { fallback(done); });
+    } else { fallback(done); }
+  };
+  function fallback(done) {
+    var ta = document.createElement('textarea');
+    ta.value = url; ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:absolute;left:-9999px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+})();
+</script>
+</body>
+</html>

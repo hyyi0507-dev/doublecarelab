@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /guide.html
+
+Sitemap: https://doublecarelab.vercel.app/sitemap.xml

@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>홈페이지 고치기 · 더블케어랩</title>
+<!-- 이 파일은 tools/build_admin.py 가 구워 냅니다. 손으로 고치면 다음 빌드 때 사라집니다.
+     고치실 곳은 tools/admin_template.html 입니다. -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" as="style" crossorigin
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root{
+    --bg:#FFFFFF; --ink:#111111; --dim:#5A5A5A; --line:#E2E2E2; --soft:#F5F5F4;
+    --key:#2E4C82; --warn:#8A1F11; --hold:#C08A00; --ok:#2A6B45;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--soft); color:var(--ink);
+    font:16px/1.7 'Pretendard Variable',Pretendard,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;
+    -webkit-text-size-adjust:100%;
+    padding-bottom:96px;
+  }
+  a{color:var(--key);}
+  .wrap{max-width:960px;margin:0 auto;padding:0 16px;}
+
+  /* ---------- 비밀번호 화면 ---------- */
+  #gate{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  #gate .box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:28px 24px;max-width:420px;width:100%;}
+  #gate h1{font-size:22px;margin:0 0 6px;}
+  #gate p{color:var(--dim);font-size:15px;margin:0 0 18px;}
+  #pin{width:100%;font-size:30px;letter-spacing:.35em;text-align:center;padding:14px;
+       border:2px solid var(--line);border-radius:10px;font-family:inherit;}
+  #pin:focus{outline:none;border-color:var(--key);}
+  .err{color:var(--warn);font-size:15px;min-height:24px;margin:8px 0 0;font-weight:600;}
+  .hint{margin-top:14px;font-size:14px;color:var(--dim);background:var(--soft);
+        border-radius:8px;padding:10px 12px;}
+
+  /* ---------- 머리 ---------- */
+  .top{background:var(--ink);color:#fff;padding:16px 0;}
+  .top .wrap{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+  .top b{font-size:19px;}
+  .top span{color:#B8B8B8;font-size:14px;}
+  .top .sp{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;}
+
+  .tabs{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50;}
+  .tabs .wrap{display:flex;gap:4px;overflow-x:auto;}
+  .tabs button{
+    border:0;background:none;font:600 16px/1 inherit;color:var(--dim);
+    padding:16px 12px;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;
+  }
+  .tabs button.on{color:var(--ink);border-bottom-color:var(--key);}
+
+  .panel{display:none;padding:22px 0 40px;}
+  .panel.on{display:block;}
+  h2.t{font-size:21px;margin:0 0 6px;}
+  p.t{color:var(--dim);margin:0 0 18px;font-size:15px;}
+
+  /* ---------- 단추 ---------- */
+  .b{font:600 16px/1 inherit;border:1px solid var(--line);background:#fff;color:var(--ink);
+     border-radius:9px;padding:14px 16px;cursor:pointer;text-decoration:none;display:inline-block;}
+  .b-go{background:var(--key);border-color:var(--key);color:#fff;}
+  .b-warn{background:var(--warn);border-color:var(--warn);color:#fff;}
+  .b-big{font-size:18px;padding:18px 22px;}
+  .b-sm{font-size:14px;padding:10px 12px;}
+  .b:disabled{opacity:.45;cursor:not-allowed;}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+
+  /* ---------- 글 목록 ---------- */
+  .tools{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px;}
+  .tools input[type=search],.tools select,input.tx{
+    font:16px/1.4 inherit;padding:12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);}
+  .tools input[type=search]{flex:1;min-width:200px;}
+  label.ck{display:inline-flex;gap:6px;align-items:center;font-size:15px;color:var(--dim);cursor:pointer;}
+  label.ck input{width:18px;height:18px;}
+
+  details.grp{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden;}
+  details.grp>summary{padding:15px 16px;cursor:pointer;font-weight:700;font-size:17px;list-style:none;
+                      display:flex;gap:10px;align-items:center;}
+  details.grp>summary::-webkit-details-marker{display:none;}
+  details.grp>summary::before{content:'▸';color:var(--dim);font-weight:400;}
+  details.grp[open]>summary::before{content:'▾';}
+  details.grp>summary .pg{font-size:13px;font-weight:600;color:var(--dim);background:var(--soft);
+                          border-radius:20px;padding:3px 10px;}
+  .badge{font-size:13px;font-weight:700;color:#fff;background:var(--hold);border-radius:20px;padding:3px 9px;}
+  .badge.g{background:var(--dim);}
+  .grp .in{padding:0 16px 16px;}
+
+  .fld{border-top:1px solid var(--line);padding:16px 0;}
+  .fld.hide{display:none;}
+  .fld .lab{font-size:13px;color:var(--dim);margin-bottom:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .fld .tag{background:var(--soft);border-radius:5px;padding:2px 7px;}
+  .fld .tag.keep{background:#FDF3D8;color:#6B4E00;font-weight:700;}
+  .fld .tag.lock{background:#F6E2DE;color:var(--warn);font-weight:700;}
+  .fld .tag.addr{background:#E4EAF5;color:var(--key);font-weight:700;}
+  .ed{border:1px solid var(--line);border-radius:9px;padding:13px;min-height:52px;background:#fff;
+      font-size:16px;line-height:1.75;outline:none;}
+  .ed:focus{border-color:var(--key);box-shadow:0 0 0 3px rgba(46,76,130,.14);}
+  .fld.changed .ed{border-color:var(--hold);background:#FFFCF3;}
+  .msg{display:none;margin-top:8px;font-size:14.5px;border-radius:8px;padding:10px 12px;line-height:1.65;}
+  .msg.show{display:block;}
+  .msg.bad{background:#FBEFEC;color:var(--warn);border:1px solid #E7C9C2;}
+  .msg.hold{background:#FDF7E6;color:#6B4E00;border:1px solid #EBD9A6;}
+  .msg.ok{background:#EAF3EC;color:var(--ok);border:1px solid #C4DFCC;}
+  .fld .act{margin-top:8px;}
+
+  /* ---------- 사진 ---------- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
+  .ph{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .ph.changed{border-color:var(--hold);}
+  .ph .pic{background:var(--soft);aspect-ratio:16/10;display:flex;align-items:center;justify-content:center;}
+  .ph .pic img{width:100%;height:100%;object-fit:cover;display:block;}
+  .ph .pic .none{color:var(--dim);font-size:13px;text-align:center;padding:10px;}
+  .ph .meta{padding:12px;}
+  .ph .nm{font-weight:700;font-size:15px;line-height:1.5;}
+  .ph .sub{font-size:13px;color:var(--dim);margin:4px 0 10px;word-break:break-all;}
+  .bar{height:10px;background:var(--line);border-radius:20px;overflow:hidden;margin:8px 0 6px;}
+  .bar i{display:block;height:100%;background:var(--key);}
+  .bar.full i{background:var(--warn);}
+
+  /* ---------- 상자 ---------- */
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:14px;}
+  .card h3{margin:0 0 8px;font-size:17px;}
+  .card p{margin:0 0 10px;color:var(--dim);font-size:15px;}
+  .card.hi{border-color:var(--key);border-width:2px;}
+  .card.danger{background:#FBEFEC;border-color:#E7C9C2;}
+  .card.danger h3{color:var(--warn);}
+  .note{background:#FDF7E6;border:1px solid #EBD9A6;border-radius:10px;padding:14px;font-size:15px;line-height:1.7;}
+  .note b{color:#6B4E00;}
+  ol.steps{padding-left:20px;margin:0;} ol.steps li{margin-bottom:8px;}
+  ul.plain{padding-left:20px;margin:0;} ul.plain li{margin-bottom:6px;}
+  table.kv{width:100%;border-collapse:collapse;font-size:15px;}
+  table.kv th,table.kv td{border-top:1px solid var(--line);padding:10px 6px;text-align:left;vertical-align:top;}
+  table.kv th{width:34%;color:var(--dim);font-weight:600;}
+  code{background:var(--soft);border-radius:5px;padding:2px 6px;font-size:14px;word-break:break-all;}
+
+  /* ---------- 아래 고정 띠 ---------- */
+  .foot{position:fixed;left:0;right:0;bottom:0;z-index:80;background:var(--ink);color:#fff;
+        padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+        box-shadow:0 -2px 14px rgba(0,0,0,.22);}
+  .foot .b{border-color:#3A3A3A;background:#232323;color:#fff;}
+  .foot .b-go{background:var(--key);border-color:var(--key);}
+  .foot .state{margin-left:auto;font-size:14px;color:#B8B8B8;}
+
+  @media (max-width:560px){
+    .top .sp{width:100%;} .b-big{width:100%;text-align:center;}
+    table.kv th{width:auto;display:block;border-top:0;padding-bottom:0;}
+    table.kv td{display:block;padding-top:2px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= 비밀번호 ================= -->
+<div id="gate">
+  <div class="box">
+    <h1>홈페이지 고치기</h1>
+    <p>더블케어랩 · 더조은 15분샵 인천 부평점</p>
+    <input id="pin" type="password" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="○○○○">
+    <div class="err" id="pinErr"></div>
+    <button class="b b-go" id="pinGo" style="width:100%;padding:16px;font-size:18px;">들어가기</button>
+    <div class="hint" id="pinHint">
+      처음 비밀번호는 <b>1017</b> 입니다 (전화 뒷자리).<br>
+      들어가신 뒤 「백업·되돌리기」에서 바꾸실 수 있고, 바꾸시면 이 안내는 사라집니다.
+    </div>
+  </div>
+</div>
+
+<!-- ================= 본 화면 ================= -->
+<div id="app" style="display:none;">
+
+  <div class="top">
+    <div class="wrap">
+      <b>홈페이지 고치기</b>
+      <span id="topSum"></span>
+      <span class="sp">
+        <a class="b b-sm" href="index.html" target="_blank" rel="noopener">홈페이지 보기</a>
+        <a class="b b-sm" href="guide.html" target="_blank" rel="noopener">사용법 보기</a>
+      </span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="wrap">
+      <button data-tab="text" class="on">글 고치기</button>
+      <button data-tab="img">사진 바꾸기</button>
+      <button data-tab="info">전화·주소</button>
+      <button data-tab="pub">웹에 반영하기</button>
+      <button data-tab="back">백업·되돌리기</button>
+      <button data-tab="help">도움말</button>
+    </div>
+  </div>
+
+  <!-- ---------- 글 ---------- -->
+  <section class="panel on" id="p-text">
+    <div class="wrap">
+      <h2 class="t">글 고치기</h2>
+      <p class="t">칸을 눌러 고쳐 쓰시면 됩니다. 저장 단추는 없습니다 — 손을 떼면 저절로 저장됩니다.</p>
+
+      <div class="tools">
+        <div class="row">
+          <select id="pgSel"><option value="">모든 페이지</option></select>
+          <input type="search" id="q" placeholder="고치실 글을 찾아보세요 (예: 전화, 주차, 상담)">
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <label class="ck"><input type="checkbox" id="onlyChanged"> 고친 곳만 보기</label>
+          <button class="b b-sm" id="openAll">전부 펼치기</button>
+          <button class="b b-sm" id="shutAll">전부 접기</button>
+          <button class="b b-sm b-warn" id="checkAll">쓰면 안 되는 말 전체 검사</button>
+        </div>
+      </div>
+
+      <div class="card danger" id="report" style="display:none;"></div>
+      <div id="groups"></div>
+    </div>
+  </section>
+
+  <!-- ---------- 사진 ---------- -->
+  <section class="panel" id="p-img">
+    <div class="wrap">
+      <h2 class="t">사진 바꾸기</h2>
+      <p class="t">「사진 고르기」를 누르고 폰이나 컴퓨터에 있는 사진을 고르시면 됩니다. 큰 사진은 저절로 줄여서 저장합니다.</p>
+      <div class="card">
+        <b>저장 공간</b>
+        <div class="bar" id="uBar"><i style="width:0"></i></div>
+        <div id="uTxt" style="font-size:14px;color:var(--dim);"></div>
+      </div>
+      <div class="grid" id="photos"></div>
+    </div>
+  </section>
+
+  <!-- ---------- 전화·주소 ---------- -->
+  <section class="panel" id="p-info">
+    <div class="wrap">
+      <h2 class="t">전화·주소</h2>
+      <p class="t">여기서 한 번만 고치시면 다섯 페이지의 전화 단추와 지도 링크가 함께 바뀝니다.</p>
+
+      <div class="card">
+        <h3>전화번호</h3>
+        <p>홈페이지의 모든 전화 단추·아래 고정 띠·맨 아래 사업자 정보가 함께 바뀝니다.</p>
+        <div class="row">
+          <input class="tx" type="text" id="setTel" placeholder="010-8776-1017" style="min-width:220px;">
+          <button class="b b-go b-sm" id="telSave">전화번호 저장</button>
+          <button class="b b-sm" id="telUndo">처음으로</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>매장 주소</h3>
+        <p>「오시는 길」의 주소 글자와 네이버 지도·카카오맵 링크가 함께 바뀝니다.</p>
+        <div class="row">
+          <input class="tx" type="text" id="setAddr" placeholder="인천광역시 부평구 안남로63번길 4 (부평동) 2층" style="flex:1;min-width:260px;">
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <button class="b b-go b-sm" id="addrSave">주소 저장</button>
+          <button class="b b-sm" id="addrUndo">처음으로</button>
+        </div>
+        <div class="note" style="margin-top:14px;">
+          <b>⚠ 지금 적힌 주소는 아직 확정된 것이 아닙니다.</b><br>
+          당근 비즈프로필과 본사 목록에서 찾은 주소라, 대표님께서 한 번 확인해 주셔야 합니다.
+          <b>여기서 고치시면 화면의 주소·지도 링크 3곳은 바로 바뀌지만, 아래 두 곳은 자동으로 바뀌지 않습니다.</b>
+          <ul class="plain" style="margin-top:8px;">
+            <li>검색 결과에 나오는 소개 글(<code>meta description</code>·<code>og:description</code>)의 「부평동」</li>
+            <li>검색엔진에 알려 주는 가게 정보(<code>JSON-LD</code>)의 주소</li>
+          </ul>
+          주소를 정말로 바꾸실 때는 <b>만든 곳에 한 번 알려 주십시오.</b> 다섯 곳을 함께 맞춰 드립니다.
+          (자리는 <code>연결설정-3차.md</code> 1절에 적혀 있습니다)
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>카카오톡 채널</h3>
+        <p>채널이 없다고 하셔서 카톡 단추는 넣지 않았습니다. 나중에 채널을 만드시면 만든 곳에 알려 주십시오 — 단추를 붙여 드립니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- 웹에 반영하기 ---------- -->
+  <section class="panel" id="p-pub">
+    <div class="wrap">
+      <h2 class="t">웹에 반영하기</h2>
+      <p class="t">여기를 누르셔야 손님 화면에도 보입니다. 누르기 전까지는 이 컴퓨터에서만 바뀐 상태입니다.</p>
+
+      <div class="card hi">
+        <h3>지금 반영을 기다리는 것</h3>
+        <table class="kv"><tbody>
+          <tr><th>고치신 글</th><td id="pubT">–</td></tr>
+          <tr><th>바꾸신 사진</th><td id="pubI">–</td></tr>
+          <tr><th>전화·주소</th><td id="pubS">–</td></tr>
+        </tbody></table>
+        <div class="note" style="margin:14px 0;">
+          <b>반영 전에 한 번만 봐 주십시오.</b> 건강기능식품은 쓸 수 있는 말이 법으로 정해져 있습니다.
+          아래를 누르면 고치신 글을 전부 검사합니다.
+        </div>
+        <div class="row">
+          <button class="b b-sm b-warn" id="pubCheck">쓰면 안 되는 말 검사</button>
+        </div>
+        <div class="msg" id="pubMsg"></div>
+        <label class="ck" style="margin:14px 0 12px;display:flex;">
+          <input type="checkbox" id="pubAgree">
+          <span>검사 결과를 확인했고, 질병 이름·「치료」·「효과」 같은 말이 들어가지 않았음을 확인했습니다.</span>
+        </label>
+        <button class="b b-go b-big" id="pubGo" disabled>웹에 반영하기</button>
+        <div class="msg" id="pubOut"></div>
+      </div>
+
+      <div class="card">
+        <h3>반영한 뒤에</h3>
+        <ol class="steps">
+          <li>홈페이지에 실제로 보이기까지 <b>1~2분</b> 걸립니다.</li>
+          <li>화면이 그대로면 키보드의 <b>Ctrl + Shift + R</b> 을 눌러 주세요 (맥은 ⌘ + Shift + R).</li>
+          <li>그래도 그대로면 잠시 기다렸다가 다시 열어 보십시오.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3>「반영하기」가 안 될 때</h3>
+        <ul class="plain">
+          <li><b>비밀번호가 맞지 않습니다</b> — 관리자에서 비밀번호를 바꾸셨다면, 홈페이지를 올린 곳(버셀)의 설정도 함께 바꿔야 합니다. 만든 곳에 알려 주십시오.</li>
+          <li><b>주소를 찾지 못했습니다</b> — 파일을 열어 보고 계신 상태(주소가 <code>file:///</code> 로 시작)입니다. 인터넷 주소로 열어 주세요.</li>
+          <li>그 밖의 빨간 글씨가 나오면 <b>그 글씨를 그대로 찍어서</b> 보내 주십시오.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- 백업 ---------- -->
+  <section class="panel" id="p-back">
+    <div class="wrap">
+      <h2 class="t">백업·되돌리기</h2>
+      <p class="t">고치신 내용은 이 컴퓨터의 브라우저에 저장됩니다. 인터넷 기록을 지우면 함께 사라지니, 많이 고치신 날은 백업을 받아 두세요.</p>
+
+      <div class="card">
+        <h3>백업</h3>
+        <p>고치신 내용을 파일 하나로 내려받습니다. 나중에 그 파일을 다시 넣으면 그대로 돌아옵니다.</p>
+        <div class="row">
+          <button class="b b-go" id="expBtn">백업 받기 (파일로 저장)</button>
+          <button class="b" id="impBtn">백업 불러오기</button>
+          <input type="file" id="impFile" accept="application/json,.json" style="display:none;">
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>비밀번호 바꾸기</h3>
+        <p>바꾼 비밀번호는 <b>이 컴퓨터에만</b> 저장됩니다. 다른 컴퓨터에서는 처음 비밀번호로 들어갑니다.
+           모든 컴퓨터에서 바꾸시려면 만든 곳에 알려 주십시오.</p>
+        <div class="row">
+          <input class="tx" type="text" id="newPin" inputmode="numeric" maxlength="8" placeholder="새 비밀번호 (숫자 4자리)" style="max-width:240px;">
+          <button class="b b-go b-sm" id="pinSave">바꾸기</button>
+        </div>
+      </div>
+
+      <div class="card danger">
+        <h3>전부 처음으로 되돌리기</h3>
+        <p>고치신 글·사진·전화·주소를 <b>모두</b> 처음 상태로 되돌립니다. 되돌린 뒤 「웹에 반영하기」를 눌러야 손님 화면도 돌아갑니다.</p>
+        <div class="row"><button class="b b-warn" id="resetAll">전부 처음으로 되돌리기</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- 도움말 ---------- -->
+  <section class="panel" id="p-help">
+    <div class="wrap">
+      <h2 class="t">도움말</h2>
+
+      <div class="card hi">
+        <h3>딱 세 가지만 기억하시면 됩니다</h3>
+        <ol class="steps">
+          <li><b>글은 눌러서 고칩니다.</b> 저장 단추는 없습니다 — 손을 떼면 저절로 저장됩니다.</li>
+          <li><b>다 고치시면 「웹에 반영하기」를 한 번 누릅니다.</b> 이걸 눌러야 손님 화면에 보입니다.</li>
+          <li><b>화면이 안 바뀌면 Ctrl + Shift + R</b> 을 누릅니다.</li>
+        </ol>
+        <div class="row" style="margin-top:12px;">
+          <a class="b b-go" href="guide.html" target="_blank" rel="noopener">자세한 사용법 열기</a>
+        </div>
+      </div>
+
+      <div class="card danger">
+        <h3>쓰면 안 되는 말 — 건강기능식품이라서 그렇습니다</h3>
+        <p>이건 저희가 까다롭게 구는 것이 아니라, 법으로 정해져 있는 것입니다. 어기면 과태료·영업정지가 나옵니다.</p>
+        <ul class="plain">
+          <li><b>질병 이름</b> — 당뇨·혈압·암·아토피·관절염·변비 … (가장 무겁습니다)</li>
+          <li><b>몸에서 무엇이 빠진다는 말</b> — 디톡스·독소·노폐물·배출·면역력·혈액순환</li>
+          <li><b>살·체형</b> — 다이어트·체지방·내장지방·감량</li>
+          <li><b>의약품처럼 읽히는 말</b> — 치료·완치·예방·효능·효과·낫습니다</li>
+          <li><b>단정·최상급</b> — 100%·천연·부작용 없는·최고·1위·최초·유일</li>
+        </ul>
+        <p style="margin-top:10px;">
+          쓰시면 <b>노란 경고</b>가 뜹니다. 막지는 않습니다 — 대표님께서 보시고 판단하시라는 뜻입니다.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>절대 지우면 안 되는 두 가지</h3>
+        <table class="kv"><tbody>
+          <tr><th>「…에 도움을 줄 수 있음」</th>
+              <td>제품 상자 뒷면에 적힌 그대로만 쓸 수 있는 문장입니다.
+                  <b>어미를 지우거나 쉬운 말로 풀어 쓰면 법 위반</b>입니다. 지우시면 경고가 뜹니다.</td></tr>
+          <tr><th>맨 아래 법정 고지문</th>
+              <td>「본 제품은 질병의 예방 및 치료를 위한 의약품이 아닙니다」,
+                  「의료기기가 아닌 미용기기입니다」 두 줄입니다.
+                  <b>비우시면 원래 문장으로 저절로 되돌아갑니다.</b></td></tr>
+        </tbody></table>
+      </div>
+
+      <div class="card">
+        <h3>홈페이지 화면에서 바로 고치기</h3>
+        <p>목록에서 찾기 어려우실 때는, 홈페이지를 보면서 그 자리에서 바로 고치실 수 있습니다.
+           고치신 뒤에는 다시 여기로 돌아와 「웹에 반영하기」를 눌러 주세요.</p>
+        <div class="row" id="liveRow"></div>
+      </div>
+
+      <div class="card">
+        <h3>이건 만든 곳에 말씀해 주세요</h3>
+        <ul class="plain">
+          <li>사진을 <b>새로 넣거나 빼는</b> 것 (바꾸는 건 여기서 됩니다)</li>
+          <li>메뉴·페이지를 <b>더하거나 없애는</b> 것</li>
+          <li><b>주소를 정말로 바꾸는</b> 것 — 검색에 나오는 글까지 다섯 곳을 함께 고쳐야 합니다</li>
+          <li>카카오톡 채널을 만드셨을 때</li>
+          <li>건강기능식품 일반판매업 신고번호를 받으셨을 때</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    <button class="b b-sm" id="fSave">지금 저장</button>
+    <a class="b b-sm b-go" href="#" id="fPub">웹에 반영하기</a>
+    <span class="state" id="state">저절로 저장됩니다</span>
+  </div>
+</div>
+
+<script>window.CMS_ADMIN = true;</script>
+<script src="cms.js?v=8"></script>
+<script src="content.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var D = {"pages": [{"file": "index.html", "name": "홈 (첫 화면)"}, {"file": "care.html", "name": "15분 케어 — 자세히"}, {"file": "label.html", "name": "박스 뒷면 — 자세히"}, {"file": "products.html", "name": "취급 제품 — 자세히"}, {"file": "about.html", "name": "대표 소개 — 자세히"}], "groups": [{"id": "index@hero", "page": "index.html", "pname": "홈 (첫 화면)", "name": "1. 첫 화면"}, {"id": "index@about", "page": "index.html", "pname": "홈 (첫 화면)", "name": "5. 대표 소개"}, {"id": "index@care", "page": "index.html", "pname": "홈 (첫 화면)", "name": "2. 15분 케어"}, {"id": "index@products", "page": "index.html", "pname": "홈 (첫 화면)", "name": "4. 취급 제품"}, {"id": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "name": "8. 상담"}, {"id": "index@location", "page": "index.html", "pname": "홈 (첫 화면)", "name": "9. 오시는 길"}, {"id": "index@footer", "page": "index.html", "pname": "홈 (첫 화면)", "name": "10. 맨 아래 (사업자 정보·법정 고지문)"}, {"id": "care@1", "page": "care.html", "pname": "15분 케어 — 자세히", "name": "기기와 이용 방법을 자세히 적었습니다"}, {"id": "care@2", "page": "care.html", "pname": "15분 케어 — 자세히", "name": "기기"}, {"id": "care@3", "page": "care.html", "pname": "15분 케어 — 자세히", "name": "이용 규칙"}, {"id": "care@4", "page": "care.html", "pname": "15분 케어 — 자세히", "name": "이용 전에 확인해 주십시오"}, {"id": "label@1", "page": "label.html", "pname": "박스 뒷면 — 자세히", "name": "표시면에서 무엇을 보아야 하는가"}, {"id": "label@2", "page": "label.html", "pname": "박스 뒷면 — 자세히", "name": "건강기능식품과 일반식품은 다릅니다"}, {"id": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "name": "저희가 취급하는 제품의 식품유형"}, {"id": "label@4", "page": "label.html", "pname": "박스 뒷면 — 자세히", "name": "지금 문구를 실을 수 있는 제품"}, {"id": "products@1", "page": "products.html", "pname": "취급 제품 — 자세히", "name": "좋은효소 제품 안내"}, {"id": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "name": "건강기능식품 6종"}, {"id": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "name": "일반식품 9종"}, {"id": "about@1", "page": "about.html", "pname": "대표 소개 — 자세히", "name": "이훤용 · 더조은 15분샵 인천 부평점"}, {"id": "about@2", "page": "about.html", "pname": "대표 소개 — 자세히", "name": "이력"}, {"id": "about@3", "page": "about.html", "pname": "대표 소개 — 자세히", "name": "걷는 습관"}, {"id": "about@4", "page": "about.html", "pname": "대표 소개 — 자세히", "name": "1+1 부부이야기"}], "fields": [{"k": "index-1e7c8157", "g": "index@hero", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "영문 이름표", "html": "Double Care Lab · Incheon Bupyeong", "text": "Double Care Lab · Incheon Bupyeong", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-ca15fe66", "g": "index@hero", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "큰 제목", "html": "\u003cspan class=\"l\">15분, 나를 위한\u003c/span>\u003cspan class=\"l\">\u003cem>가장 짧은 사치\u003c/em>\u003c/span>", "text": "15분, 나를 위한가장 짧은 사치", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-cadf8197", "g": "index@hero", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "앉아서 받는 15분 셀프 뷰티 케어와 좋은효소 미리안을 한자리에서.\u003cbr>처음 오셔도 편하게 시작하실 수 있습니다.", "text": "앉아서 받는 15분 셀프 뷰티 케어와 좋은효소 미리안을 한자리에서. / 처음 오셔도 편하게 시작하실 수 있습니다.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-43300807", "g": "index@hero", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "더블케어랩 · 더조은 15분샵 인천 부평점", "text": "더블케어랩 · 더조은 15분샵 인천 부평점", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-47beff71", "g": "index@hero", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "영문 이름표", "html": "Double Care Lab", "text": "Double Care Lab", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-45b459b7", "g": "index@hero", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "큰 제목", "html": "더블케어랩에 오면\u003cbr>건강하게 아름다워지는 비법이 있습니다", "text": "더블케어랩에 오면 / 건강하게 아름다워지는 비법이 있습니다", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-a4dcc022", "g": "index@hero", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "15분 케어로, 아름답게", "text": "15분 케어로, 아름답게", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-920fec32", "g": "index@hero", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "앉아서 15분. 초음파·중주파·미세전류를 갖춘 미용기기를 직접 사용합니다. 1회 1만원.", "text": "앉아서 15분. 초음파·중주파·미세전류를 갖춘 미용기기를 직접 사용합니다. 1회 1만원.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-4924094c", "g": "index@hero", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "좋은 효소로, 하루 한 포", "text": "좋은 효소로, 하루 한 포", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-b670fd50", "g": "index@hero", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "좋은효소 정식 취급점. 미리안 슬림·클린·알파자임 중 내게 맞는 한 포를 같이 골라 드립니다.", "text": "좋은효소 정식 취급점. 미리안 슬림·클린·알파자임 중 내게 맞는 한 포를 같이 골라 드립니다.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-673926c9", "g": "index@hero", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "믿고 듣는 상담, 부담 없이", "text": "믿고 듣는 상담, 부담 없이", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-b7af9a6c", "g": "index@hero", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "부부가 같이 듣습니다. 급하게 권하지 않고, 그 자리에서 정하지 않으셔도 됩니다.", "text": "부부가 같이 듣습니다. 급하게 권하지 않고, 그 자리에서 정하지 않으셔도 됩니다.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-564497b5", "g": "index@about", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "사진 설명", "html": "대표 부부 · 2023년부터 함께 공부하는 1+1 부부", "text": "대표 부부 · 2023년부터 함께 공부하는 1+1 부부", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-89ff3122", "g": "index@about", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "영문 이름표", "html": "Owner", "text": "Owner", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-f51b35c3", "g": "index@about", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "큰 제목", "html": "더블케어랩 대표 \u003cem>이훤용\u003c/em>", "text": "더블케어랩 대표 이훤용", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-4fd7a885", "g": "index@about", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "소개 문단", "html": "은행과 일반기업에서 30년을 일했습니다. 2023년에는 아내와 함께 대구한의대학교에 입학해, 지금은 인체정화생명공학과 대학원에서 공부하고 있습니다. 「우리는 1+1 부부입니다. 누가 하나 하면 같이 하는 사이입니다.」 더블케어랩이라는 이름은 부부와 가족의 건강을 함께 돌본다는 뜻으로 지었습니다.", "text": "은행과 일반기업에서 30년을 일했습니다. 2023년에는 아내와 함께 대구한의대학교에 입학해, 지금은 인체정화생명공학과 대학원에서 공부하고 있습니다. 「우리는 1+1 부부입니다. 누가 하나 하면 같이 하는 사이입니다.」 더블케어랩이라는 이름은 부부와 가족의 건강을 함께 돌본다는 뜻으로 지었습니다.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-9b322765", "g": "index@care", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "영문 이름표", "html": "15-minute self beauty care", "text": "15-minute self beauty care", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-b5f1ce5b", "g": "index@care", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "큰 제목", "html": "15분, 앉아서 받는\u003cbr>\u003cem>셀프 뷰티 케어\u003c/em>", "text": "15분, 앉아서 받는 / 셀프 뷰티 케어", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-a533a47f", "g": "index@care", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "소개 문단", "html": "초음파·중주파·미세전류를 갖춘 미용기기를 손님이 직접 쓰시는 방식입니다.\n           처음 오시면 사용법을 보여 드리고, 그 뒤로는 혼자 조용히 15분. 끝나면 알림음과 함께 기기가 스스로 멈춥니다.", "text": "초음파·중주파·미세전류를 갖춘 미용기기를 손님이 직접 쓰시는 방식입니다. 처음 오시면 사용법을 보여 드리고, 그 뒤로는 혼자 조용히 15분. 끝나면 알림음과 함께 기기가 스스로 멈춥니다.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-9d284f22", "g": "index@care", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "개인용 젤은 별매품으로 따로 구매하셔야 합니다.", "text": "개인용 젤은 별매품으로 따로 구매하셔야 합니다.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-072d333c", "g": "index@care", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "작은 제목", "html": "처음 오셔도 어렵지 않습니다", "text": "처음 오셔도 어렵지 않습니다", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-901fa134", "g": "index@care", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "젤을 바릅니다", "text": "젤을 바릅니다", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-76830088", "g": "index@care", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "개인용 젤 사용", "text": "개인용 젤 사용", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-5c1f676c", "g": "index@care", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "켜고 고릅니다", "text": "켜고 고릅니다", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-f795c68b", "g": "index@care", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "모드와 세기 선택", "text": "모드와 세기 선택", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-b10208c0", "g": "index@care", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "기다립니다", "text": "기다립니다", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-8e6ab740", "g": "index@care", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "15분, 손댈 것 없이 편하게", "text": "15분, 손댈 것 없이 편하게", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-ba3d3ff1", "g": "index@care", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "닦아냅니다", "text": "닦아냅니다", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-3db3d1ba", "g": "index@care", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "마치면 알림음이 울립니다", "text": "마치면 알림음이 울립니다", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-25e75adc", "g": "index@care", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "작은 제목", "html": "이용 전 확인 사항", "text": "이용 전 확인 사항", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-108cd562", "g": "index@care", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "목록 한 줄", "html": "처음 이용하시는 분은 매장 안내를 받으신 뒤에 시작해 주십시오.", "text": "처음 이용하시는 분은 매장 안내를 받으신 뒤에 시작해 주십시오.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-a0993fd9", "g": "index@care", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "목록 한 줄", "html": "치료를 받고 계시거나 복용 중인 약이 있으시면, 이용 전에 담당 의료진과 먼저 상의해 주십시오.", "text": "치료를 받고 계시거나 복용 중인 약이 있으시면, 이용 전에 담당 의료진과 먼저 상의해 주십시오.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-e68ebe2a", "g": "index@care", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "목록 한 줄", "html": "이용 중 불편하시면 즉시 중단하시고 저희에게 말씀해 주십시오.", "text": "이용 중 불편하시면 즉시 중단하시고 저희에게 말씀해 주십시오.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-5bdebc25", "g": "index@care", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "\u003cb>오시기 전에\u003c/b> · 기기는 한 번 쓰고 나면 10분 정도 쉬게 한 뒤 다시 씁니다. 같은 부위는 5시간이 지난 뒤에 다시 이용하시도록 안내해 드립니다(제조사 사용설명서).\n           \u003cb>전화를 주고 오시면 기다리지 않으십니다.\u003c/b>", "text": "오시기 전에 · 기기는 한 번 쓰고 나면 10분 정도 쉬게 한 뒤 다시 씁니다. 같은 부위는 5시간이 지난 뒤에 다시 이용하시도록 안내해 드립니다(제조사 사용설명서). 전화를 주고 오시면 기다리지 않으십니다.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-2d67ebbf", "g": "index@products", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "영문 이름표", "html": "Mirian by Wellzyme", "text": "Mirian by Wellzyme", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-80291291", "g": "index@products", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "큰 제목", "html": "좋은효소 미리안, \u003cem>대표 3종\u003c/em>", "text": "좋은효소 미리안, 대표 3종", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-05b4d2ef", "g": "index@products", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "소개 문단", "html": "좋은효소 정식 취급점입니다. 매장에서 가장 많이 찾으시는 세 가지를 골랐습니다.", "text": "좋은효소 정식 취급점입니다. 매장에서 가장 많이 찾으시는 세 가지를 골랐습니다.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-0c0206bf", "g": "index@products", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "작은 제목", "html": "미리안 슬림", "text": "미리안 슬림", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-e69cecd8", "g": "index@products", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "건강기능식품 · 가르시니아캄보지아추출물 · 5g × 30포", "text": "건강기능식품 · 가르시니아캄보지아추출물 · 5g × 30포", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-f26888ed", "g": "index@products", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "「탄수화물이 지방으로 합성되는 것을 억제하여 체지방 감소에 도움을 줄 수 있음」", "text": "「탄수화물이 지방으로 합성되는 것을 억제하여 체지방 감소에 도움을 줄 수 있음」", "pages": ["홈 (첫 화면)"], "keep": true, "lock": false, "addr": false}, {"k": "index-703e1390", "g": "index@products", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "하루 한 포, 물과 함께. 노란 스틱이라 가방 안에서도 바로 찾습니다.", "text": "하루 한 포, 물과 함께. 노란 스틱이라 가방 안에서도 바로 찾습니다.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-1dbedf5f", "g": "index@products", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "작은 제목", "html": "미리안 클린", "text": "미리안 클린", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-e1ed25eb", "g": "index@products", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "건강기능식품 · 차전자피식이섬유 · 3g × 40포", "text": "건강기능식품 · 차전자피식이섬유 · 3g × 40포", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-5815f438", "g": "index@products", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "「혈중 콜레스테롤 개선에 도움을 줄 수 있음」\u003cbr>「배변활동 원활에 도움을 줄 수 있음」", "text": "「혈중 콜레스테롤 개선에 도움을 줄 수 있음」 / 「배변활동 원활에 도움을 줄 수 있음」", "pages": ["홈 (첫 화면)"], "keep": true, "lock": false, "addr": false}, {"k": "index-be795707", "g": "index@products", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "식이섬유를 스틱 한 포로. 아침에 물 한 컵과 같이 드시는 분이 많습니다.", "text": "식이섬유를 스틱 한 포로. 아침에 물 한 컵과 같이 드시는 분이 많습니다.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-f078b8ab", "g": "index@products", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "작은 제목", "html": "미리안 알파자임", "text": "미리안 알파자임", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-0de37ff3", "g": "index@products", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "건강기능식품 · 테아닌함유제품 · 3g × 40포", "text": "건강기능식품 · 테아닌함유제품 · 3g × 40포", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-b5dee319", "g": "index@products", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "「스트레스로 인한 긴장 완화에 도움을 줄 수 있음」", "text": "「스트레스로 인한 긴장 완화에 도움을 줄 수 있음」", "pages": ["홈 (첫 화면)"], "keep": true, "lock": false, "addr": false}, {"k": "index-18beee96", "g": "index@products", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "하루 한 포, 테아닌 200mg. 바쁜 날 저녁에 찾으시는 분이 많습니다.", "text": "하루 한 포, 테아닌 200mg. 바쁜 날 저녁에 찾으시는 분이 많습니다.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-6bc4a41f", "g": "index@products", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "제품별 상세 내용은 제품 뒷면 표시면에서 확인하시고, 궁금한 점은 문의해 주세요.", "text": "제품별 상세 내용은 제품 뒷면 표시면에서 확인하시고, 궁금한 점은 문의해 주세요.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-b37456c4", "g": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "영문 이름표", "html": "Contact", "text": "Contact", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-db829a9d", "g": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "큰 제목", "html": "예약·상담은\u003cbr>\u003cem>전화가\u003c/em> 가장 빠릅니다", "text": "예약·상담은 / 전화가 가장 빠릅니다", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-65536a30", "g": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "소개 문단", "html": "대표가 직접 받습니다. 상담은 무료이고, 듣기만 하셔도 됩니다.\u003cbr>문자도 좋습니다.", "text": "대표가 직접 받습니다. 상담은 무료이고, 듣기만 하셔도 됩니다. / 문자도 좋습니다.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-3c37764a", "g": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "표 이름", "html": "이메일", "text": "이메일", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-fef78ec7", "g": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "표 내용", "html": "\u003ca href=\"mailto:hyyi0507@daum.net\">hyyi0507@daum.net\u003c/a>", "text": "hyyi0507@daum.net", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-2b440862", "g": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "표 이름", "html": "영업시간", "text": "영업시간", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-a045ed71", "g": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "표 내용", "html": "오시기 전 전화로 확인해 주세요", "text": "오시기 전 전화로 확인해 주세요", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-03688ba6", "g": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "영문 이름표", "html": "FAQ", "text": "FAQ", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-c007c00a", "g": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "큰 제목", "html": "자주 묻는 질문", "text": "자주 묻는 질문", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-961bf9fe", "g": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "질문", "html": "예약해야 하나요?", "text": "예약해야 하나요?", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-aa7f9a35", "g": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "그냥 오셔도 됩니다. 다만 기기는 한 번 쓰고 나면 10분 정도 쉬게 한 뒤 다시 쓰도록 되어 있어서, 전화를 주고 오시면 기다리지 않으십니다.", "text": "그냥 오셔도 됩니다. 다만 기기는 한 번 쓰고 나면 10분 정도 쉬게 한 뒤 다시 쓰도록 되어 있어서, 전화를 주고 오시면 기다리지 않으십니다.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-0932c397", "g": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "질문", "html": "15분 케어, 처음인데 혼자 할 수 있을까요?", "text": "15분 케어, 처음인데 혼자 할 수 있을까요?", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-de5ad3db", "g": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "처음 오시는 분께는 매장에서 직접 보여 드린 뒤 시작합니다. 젤을 바르고, 켜고, 기다리고, 닦아내는 네 단계입니다. 중간에 손댈 것이 없습니다.", "text": "처음 오시는 분께는 매장에서 직접 보여 드린 뒤 시작합니다. 젤을 바르고, 켜고, 기다리고, 닦아내는 네 단계입니다. 중간에 손댈 것이 없습니다.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-dfa387a3", "g": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "질문", "html": "가격은 얼마인가요?", "text": "가격은 얼마인가요?", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-6194c337", "g": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "15분 케어는 1회 10,000원입니다(개인용 젤 별도). 제품 가격은 본사 정책에 따라 바뀌어서, 전화 주시거나 오시면 그 시점 가격을 그대로 말씀드립니다.", "text": "15분 케어는 1회 10,000원입니다(개인용 젤 별도). 제품 가격은 본사 정책에 따라 바뀌어서, 전화 주시거나 오시면 그 시점 가격을 그대로 말씀드립니다.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-ed84b8e8", "g": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "질문", "html": "상담만 받아도 되나요?", "text": "상담만 받아도 되나요?", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-bebc8129", "g": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "아닙니다. 그 자리에서 정하지 않으셔도 되고, 다른 곳과 비교해 보고 오셔도 됩니다. 드시고 계신 것이 있으면 사진으로 찍어 오시면 원료가 겹치는지 봐 드립니다.", "text": "아닙니다. 그 자리에서 정하지 않으셔도 되고, 다른 곳과 비교해 보고 오셔도 됩니다. 드시고 계신 것이 있으면 사진으로 찍어 오시면 원료가 겹치는지 봐 드립니다.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-1c0f8988", "g": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "질문", "html": "부평에서 셀프 미용기기를 써볼 수 있나요?", "text": "부평에서 셀프 미용기기를 써볼 수 있나요?", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-4810d260", "g": "index@contact", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "문단", "html": "인천 부평의 「더조은 15분샵 인천 부평점」(더블케어랩)에서 15분 케어를 이용하실 수 있습니다. 손님이 직접 조작하시는 셀프 방식이며, 이 기기는 의료기기가 아닌 미용기기입니다.", "text": "인천 부평의 「더조은 15분샵 인천 부평점」(더블케어랩)에서 15분 케어를 이용하실 수 있습니다. 손님이 직접 조작하시는 셀프 방식이며, 이 기기는 의료기기가 아닌 미용기기입니다.", "pages": ["홈 (첫 화면)"], "keep": false, "lock": true, "addr": false}, {"k": "index-d219c681", "g": "index@location", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "영문 이름표", "html": "Location", "text": "Location", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-94757c20", "g": "index@location", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "큰 제목", "html": "인천 부평구 부평동", "text": "인천 부평구 부평동", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": false}, {"k": "index-cd7b5f74", "g": "index@location", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "매장 주소", "html": "인천광역시 부평구 안남로63번길 4 (부평동) 2층", "text": "인천광역시 부평구 안남로63번길 4 (부평동) 2층", "pages": ["홈 (첫 화면)"], "keep": false, "lock": false, "addr": true}, {"k": "common-footer-biz", "g": "index@footer", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "사업자 정보", "html": "상호 \u003cb>엔에스신성\u003c/b> (더조은 15분샵 인천 부평점 · 더블케어랩) · 대표 이훤용\u003cbr>\n      사업자등록번호 552-22-01900\u003cbr>\n      전화 \u003ca href=\"tel:01087761017\">010-8776-1017\u003c/a> · 이메일 \u003ca href=\"mailto:hyyi0507@daum.net\">hyyi0507@daum.net\u003c/a>\n      \u003c!-- [보류] 건강기능식품 일반판매업 영업신고번호 — 받으면 이 줄 뒤에 붙인다 -->\n      \u003c!-- [넣지 않음] 통신판매업 신고번호 — 신고 없음 확정 -->", "text": "상호 엔에스신성 (더조은 15분샵 인천 부평점 · 더블케어랩) · 대표 이훤용 / 사업자등록번호 552-22-01900 / 전화 010-8776-1017 · 이메일 hyyi0507@daum.net", "pages": ["홈 (첫 화면)", "15분 케어 — 자세히", "박스 뒷면 — 자세히", "취급 제품 — 자세히", "대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "common-footer-legal", "g": "index@footer", "page": "index.html", "pname": "홈 (첫 화면)", "kind": "법정 고지문", "html": "본 제품은 질병의 예방 및 치료를 위한 의약품이 아닙니다.\u003cbr>\n      15분 케어에 사용하는 기기는 의료기기가 아닌 미용기기입니다.", "text": "본 제품은 질병의 예방 및 치료를 위한 의약품이 아닙니다. / 15분 케어에 사용하는 기기는 의료기기가 아닌 미용기기입니다.", "pages": ["홈 (첫 화면)", "15분 케어 — 자세히", "박스 뒷면 — 자세히", "취급 제품 — 자세히", "대표 소개 — 자세히"], "keep": false, "lock": true, "addr": false}, {"k": "care-371b9e79", "g": "care@1", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "큰 제목", "html": "기기와 이용 방법을 자세히 적었습니다", "text": "기기와 이용 방법을 자세히 적었습니다", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-afac718b", "g": "care@1", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "소개 문단", "html": "메인에는 꼭 필요한 것만 적었습니다. 여기에는 기기 제원과 이용 규칙을 그대로 옮겨 둡니다.", "text": "메인에는 꼭 필요한 것만 적었습니다. 여기에는 기기 제원과 이용 규칙을 그대로 옮겨 둡니다.", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-d79c455f", "g": "care@2", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "큰 제목", "html": "기기", "text": "기기", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-f1692f66", "g": "care@2", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "표 이름", "html": "제품명", "text": "제품명", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-a63526a9", "g": "care@2", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "표 내용", "html": "조은케어 JC-3000H", "text": "조은케어 JC-3000H", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-be77ea8d", "g": "care@2", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "표 이름", "html": "제조", "text": "제조", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-5122126d", "g": "care@2", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "표 내용", "html": "(주)아이비아이", "text": "(주)아이비아이", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-509b5caa", "g": "care@2", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "표 이름", "html": "판매", "text": "판매", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-8dacddcb", "g": "care@2", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "표 내용", "html": "(주)좋은효소 · 소비자상담실 080-311-4175", "text": "(주)좋은효소 · 소비자상담실 080-311-4175", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-85366ce6", "g": "care@2", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "표 이름", "html": "모드와 시간", "text": "모드와 시간", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-c7f5f73f", "g": "care@2", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "표 내용", "html": "초음파 15분 · 중주파 30분 · 미세전류 15분\u003cbr>시간은 고정되어 있고, 끝나면 알림음과 함께 스스로 꺼집니다", "text": "초음파 15분 · 중주파 30분 · 미세전류 15분 / 시간은 고정되어 있고, 끝나면 알림음과 함께 스스로 꺼집니다", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-1e7a4f34", "g": "care@2", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "표 이름", "html": "이용료", "text": "이용료", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-6ed06033", "g": "care@2", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "표 내용", "html": "1회 10,000원 · 셀프 이용 · 개인용 젤 별도 구매", "text": "1회 10,000원 · 셀프 이용 · 개인용 젤 별도 구매", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-b7d32116", "g": "care@2", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "문단", "html": "\u003cb>■ 의료기기 아님\u003c/b>", "text": "■ 의료기기 아님", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-3bb61341", "g": "care@2", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "문단", "html": "* 본 기기는 의료기기가 아닌 미용기기이며, 제품 기능과 관련하여 미용적인 효과 외\n           어떠한 의학적 효능, 효과도 제공하지 아니합니다.", "text": "* 본 기기는 의료기기가 아닌 미용기기이며, 제품 기능과 관련하여 미용적인 효과 외 어떠한 의학적 효능, 효과도 제공하지 아니합니다.", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": true, "addr": false}, {"k": "care-6ecbdae5", "g": "care@2", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "문단", "html": "제조사 사용설명서 표지와 15쪽에 인쇄된 문장을 그대로 옮긴 것입니다.", "text": "제조사 사용설명서 표지와 15쪽에 인쇄된 문장을 그대로 옮긴 것입니다.", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-b823fe12", "g": "care@3", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "큰 제목", "html": "이용 규칙", "text": "이용 규칙", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-6667e854", "g": "care@3", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "목록 한 줄", "html": "기기는 한 번 쓰고 나면 10분 정도 전원을 끄고 쉬게 한 뒤에 다시 씁니다.", "text": "기기는 한 번 쓰고 나면 10분 정도 전원을 끄고 쉬게 한 뒤에 다시 씁니다.", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-51e80e26", "g": "care@3", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "목록 한 줄", "html": "같은 부위는 5시간이 지난 뒤에 다시 이용하시도록 안내해 드립니다.", "text": "같은 부위는 5시간이 지난 뒤에 다시 이용하시도록 안내해 드립니다.", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-899c2753", "g": "care@3", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "목록 한 줄", "html": "앞 손님이 계시면 그만큼 기다리셔야 합니다. 전화를 주고 오시면 기다리지 않으십니다.", "text": "앞 손님이 계시면 그만큼 기다리셔야 합니다. 전화를 주고 오시면 기다리지 않으십니다.", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-220e9582", "g": "care@3", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "문단", "html": "첫 두 가지는 제조사 사용설명서에 적힌 내용입니다.\n         마지막 한 가지는 그래서 생기는 저희 매장 사정입니다.", "text": "첫 두 가지는 제조사 사용설명서에 적힌 내용입니다. 마지막 한 가지는 그래서 생기는 저희 매장 사정입니다.", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-25e75adc", "g": "care@4", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "큰 제목", "html": "이용 전에 확인해 주십시오", "text": "이용 전에 확인해 주십시오", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-108cd562", "g": "care@4", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "목록 한 줄", "html": "처음 이용하시는 분은 매장 안내를 받으신 뒤에 시작해 주십시오.", "text": "처음 이용하시는 분은 매장 안내를 받으신 뒤에 시작해 주십시오.", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-a0993fd9", "g": "care@4", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "목록 한 줄", "html": "치료를 받고 계시거나 복용 중인 약이 있으시면, 이용 전에 담당 의료진과 먼저 상의해 주십시오.", "text": "치료를 받고 계시거나 복용 중인 약이 있으시면, 이용 전에 담당 의료진과 먼저 상의해 주십시오.", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-e68ebe2a", "g": "care@4", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "목록 한 줄", "html": "이용 중 불편하시면 즉시 중단하시고 저희에게 말씀해 주십시오.", "text": "이용 중 불편하시면 즉시 중단하시고 저희에게 말씀해 주십시오.", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "care-3826de97", "g": "care@4", "page": "care.html", "pname": "15분 케어 — 자세히", "kind": "목록 한 줄", "html": "15분 케어는 의료 행위가 아닙니다.", "text": "15분 케어는 의료 행위가 아닙니다.", "pages": ["15분 케어 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-b153dfbd", "g": "label@1", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "큰 제목", "html": "표시면에서 무엇을 보아야 하는가", "text": "표시면에서 무엇을 보아야 하는가", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-ef1776b4", "g": "label@1", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "소개 문단", "html": "메인의 다섯 가지를 조금 더 풀어 적었습니다.\n         저희 제품을 사시라고 드리는 글이 아닙니다. 어느 가게에서 사시든 쓰실 수 있는 기준입니다.", "text": "메인의 다섯 가지를 조금 더 풀어 적었습니다. 저희 제품을 사시라고 드리는 글이 아닙니다. 어느 가게에서 사시든 쓰실 수 있는 기준입니다.", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-d46b69c1", "g": "label@2", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "큰 제목", "html": "건강기능식품과 일반식품은 다릅니다", "text": "건강기능식품과 일반식품은 다릅니다", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-d4eff0c1", "g": "label@2", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "소개 문단", "html": "건강기능식품은 표시면에 법이 인정한 기능성 문구를 적을 수 있습니다.\n         일반식품에는 한 줄도 적을 수 없습니다. 일반식품이 나쁘다는 뜻이 아닙니다.\n         적을 수 있는 말의 범위가 법으로 다르게 정해져 있다는 뜻입니다.", "text": "건강기능식품은 표시면에 법이 인정한 기능성 문구를 적을 수 있습니다. 일반식품에는 한 줄도 적을 수 없습니다. 일반식품이 나쁘다는 뜻이 아닙니다. 적을 수 있는 말의 범위가 법으로 다르게 정해져 있다는 뜻입니다.", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-a35b81e5", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "큰 제목", "html": "저희가 취급하는 제품의 식품유형", "text": "저희가 취급하는 제품의 식품유형", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-1caa4a78", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "소개 문단", "html": "이름과 식품유형이 다른 경우가 있어 그대로 적어 둡니다.", "text": "이름과 식품유형이 다른 경우가 있어 그대로 적어 둡니다.", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-1dbedf5f", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "미리안 클린", "text": "미리안 클린", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-efd8e4e9", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "식품유형", "html": "건강기능식품 (차전자피식이섬유)", "text": "건강기능식품 (차전자피식이섬유)", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-f078b8ab", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "미리안 알파자임", "text": "미리안 알파자임", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-cf2ed8b4", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "식품유형", "html": "건강기능식품 (테아닌함유제품)", "text": "건강기능식품 (테아닌함유제품)", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-0c0206bf", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "미리안 슬림", "text": "미리안 슬림", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-8776ddac", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "식품유형", "html": "건강기능식품 (가르시니아캄보지아추출물함유제품)", "text": "건강기능식품 (가르시니아캄보지아추출물함유제품)", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-b59707ab", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "리버빔", "text": "리버빔", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-67f6e23a", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "식품유형", "html": "건강기능식품", "text": "건강기능식품", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-9d5e3935", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "메모리엔", "text": "메모리엔", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-67f6e23a-2", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "식품유형", "html": "건강기능식품", "text": "건강기능식품", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-f9758f0d", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "엠지칼 D", "text": "엠지칼 D", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-1c8f9d3b", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "식품유형", "html": "건강기능식품 (마그네슘＋칼슘＋비타민D)", "text": "건강기능식품 (마그네슘＋칼슘＋비타민D)", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-a8065cab", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "미리안 차(茶)", "text": "미리안 차(茶)", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-8e8ffc6c", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "식품유형", "html": "발효차 — 일반식품", "text": "발효차 — 일반식품", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-592fc435", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "미리안 이너자임", "text": "미리안 이너자임", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-8000cc6d", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "식품유형", "html": "기타가공품 — 일반식품", "text": "기타가공품 — 일반식품", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-d6d7d9e8", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "발효홍삼효소", "text": "발효홍삼효소", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-bcefb1e1", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "식품유형", "html": "곡류효소함유제품 — 일반식품", "text": "곡류효소함유제품 — 일반식품", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-55ec9a74", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "속편안 엔자임", "text": "속편안 엔자임", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-8000cc6d-2", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "식품유형", "html": "기타가공품 — 일반식품", "text": "기타가공품 — 일반식품", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-0cd32628", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "파비스 썬자임", "text": "파비스 썬자임", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-39c2c59d", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "식품유형", "html": "효소식품 — 일반식품", "text": "효소식품 — 일반식품", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-279091f6", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "숨자임 · 활동자임", "text": "숨자임 · 활동자임", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-8000cc6d-3", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "식품유형", "html": "기타가공품 — 일반식품", "text": "기타가공품 — 일반식품", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-47b5a754", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "쎌밸런스 · 프로자임", "text": "쎌밸런스 · 프로자임", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-478e2e17", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "식품유형", "html": "표시면 확인 중", "text": "표시면 확인 중", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-08602f84", "g": "label@3", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "「발효홍삼효소」는 이름에 홍삼이 들어 있지만 식품유형은 곡류효소함유제품입니다.\n         그래서 저희는 이 제품에 홍삼 기능성 문구를 쓰지 않습니다.", "text": "「발효홍삼효소」는 이름에 홍삼이 들어 있지만 식품유형은 곡류효소함유제품입니다. 그래서 저희는 이 제품에 홍삼 기능성 문구를 쓰지 않습니다.", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-ef84e955", "g": "label@4", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "큰 제목", "html": "지금 문구를 실을 수 있는 제품", "text": "지금 문구를 실을 수 있는 제품", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-1dbedf5f-2", "g": "label@4", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "미리안 클린", "text": "미리안 클린", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-c5056954", "g": "label@4", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "3g × 40포 (총 120g)", "text": "3g × 40포 (총 120g)", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-50c3f4da", "g": "label@4", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "인정 기능성 문구", "html": "\u003cspan>「혈중 콜레스테롤 개선에 도움을 줄 수 있음」\u003c/span>\n            \u003cspan>「배변활동 원활에 도움을 줄 수 있음」\u003c/span>", "text": "「혈중 콜레스테롤 개선에 도움을 줄 수 있음」 「배변활동 원활에 도움을 줄 수 있음」", "pages": ["박스 뒷면 — 자세히"], "keep": true, "lock": false, "addr": false}, {"k": "label-0adb5ad4", "g": "label@4", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "나머지 제품은 표시면 실물을 확인한 뒤에 싣습니다.\n         사진으로 읽은 문구를 그대로 올리지 않습니다.", "text": "나머지 제품은 표시면 실물을 확인한 뒤에 싣습니다. 사진으로 읽은 문구를 그대로 올리지 않습니다.", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-99c0438e", "g": "label@4", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "\u003cb>어미를 지우면 위반입니다\u003c/b>", "text": "어미를 지우면 위반입니다", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-6bde107c", "g": "label@4", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "「배변활동 원활에 도움을 줄 수 있음」에서 \u003cb>「도움을 줄 수 있음」\u003c/b>을 빼고\n           「배변활동이 원활해집니다」로 바꾸면 그 순간 위반입니다.\n           요약해도, 쉬운 말로 풀어 써도 안 됩니다. 그래서 저희 홈페이지 문구가 조금 딱딱합니다.", "text": "「배변활동 원활에 도움을 줄 수 있음」에서 「도움을 줄 수 있음」을 빼고 「배변활동이 원활해집니다」로 바꾸면 그 순간 위반입니다. 요약해도, 쉬운 말로 풀어 써도 안 됩니다. 그래서 저희 홈페이지 문구가 조금 딱딱합니다.", "pages": ["박스 뒷면 — 자세히"], "keep": true, "lock": false, "addr": false}, {"k": "label-6daaaf77", "g": "label@4", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "제조원 (주)한국파비스R&amp;D / 판매원 (주)좋은효소 / 소비자상담실 080-311-4175", "text": "제조원 (주)한국파비스R&D / 판매원 (주)좋은효소 / 소비자상담실 080-311-4175", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "label-6e11d7ef", "g": "label@4", "page": "label.html", "pname": "박스 뒷면 — 자세히", "kind": "문단", "html": "\u003cb>본 제품은 질병의 예방 및 치료를 위한 의약품이 아닙니다.\u003c/b>", "text": "본 제품은 질병의 예방 및 치료를 위한 의약품이 아닙니다.", "pages": ["박스 뒷면 — 자세히"], "keep": false, "lock": true, "addr": false}, {"k": "products-bd6a3fd4", "g": "products@1", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "큰 제목", "html": "좋은효소 제품 안내", "text": "좋은효소 제품 안내", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-9c17066a", "g": "products@1", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "소개 문단", "html": "좋은효소 정식 취급점 더블케어랩이 취급하는 제품 15종입니다.\n        건강기능식품은 표시면에 인정된 기능성 문구를 그대로 옮겼고, 일반식품은 원료와 출시 연도를 적었습니다.\n        가격은 본사 정책에 따라 바뀌어서, 전화 주시거나 오시면 그 시점 가격을 그대로 말씀드립니다.", "text": "좋은효소 정식 취급점 더블케어랩이 취급하는 제품 15종입니다. 건강기능식품은 표시면에 인정된 기능성 문구를 그대로 옮겼고, 일반식품은 원료와 출시 연도를 적었습니다. 가격은 본사 정책에 따라 바뀌어서, 전화 주시거나 오시면 그 시점 가격을 그대로 말씀드립니다.", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-09f0fb1d", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "큰 제목", "html": "건강기능식품 6종", "text": "건강기능식품 6종", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-1dbedf5f", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "작은 제목", "html": "미리안 클린", "text": "미리안 클린", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-458fff97", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "건강기능식품 · 차전자피식이섬유 · 3g × 40포 (120g)", "text": "건강기능식품 · 차전자피식이섬유 · 3g × 40포 (120g)", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-084bd03e", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "차전자피식이섬유 6g (1일 섭취량 당)", "text": "차전자피식이섬유 6g (1일 섭취량 당)", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-ca6658a9", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "인정 기능성 문구", "html": "\u003cspan>「혈중 콜레스테롤 개선에 도움을 줄 수 있음」\u003c/span>\u003cspan>「배변활동 원활에 도움을 줄 수 있음」\u003c/span>", "text": "「혈중 콜레스테롤 개선에 도움을 줄 수 있음」「배변활동 원활에 도움을 줄 수 있음」", "pages": ["취급 제품 — 자세히"], "keep": true, "lock": false, "addr": false}, {"k": "products-3efa5469", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "1980년대부터 이어온 좋은효소의 첫 제품군. 식이섬유를 스틱 한 포로.", "text": "1980년대부터 이어온 좋은효소의 첫 제품군. 식이섬유를 스틱 한 포로.", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-caba6002", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "반드시 충분한 물과 함께 드십시오.", "text": "반드시 충분한 물과 함께 드십시오.", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-0c0206bf", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "작은 제목", "html": "미리안 슬림", "text": "미리안 슬림", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-159ba025", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "건강기능식품 · 가르시니아캄보지아추출물함유제품 · 5g × 30포 (150g)", "text": "건강기능식품 · 가르시니아캄보지아추출물함유제품 · 5g × 30포 (150g)", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-7bf1170b", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "가르시니아캄보지아 껍질 추출물(HCA)", "text": "가르시니아캄보지아 껍질 추출물(HCA)", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-6c5bc26e", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "인정 기능성 문구", "html": "\u003cspan>「탄수화물이 지방으로 합성되는 것을 억제하여 체지방 감소에 도움을 줄 수 있음」\u003c/span>", "text": "「탄수화물이 지방으로 합성되는 것을 억제하여 체지방 감소에 도움을 줄 수 있음」", "pages": ["취급 제품 — 자세히"], "keep": true, "lock": false, "addr": false}, {"k": "products-2eb50017", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "2000년 출시. 노란 스틱, 하루 한 포.", "text": "2000년 출시. 노란 스틱, 하루 한 포.", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-08f6d03b", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "임산부·수유부·어린이·청소년은 섭취를 피하십시오.", "text": "임산부·수유부·어린이·청소년은 섭취를 피하십시오.", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-f078b8ab", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "작은 제목", "html": "미리안 알파자임", "text": "미리안 알파자임", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-30ff2443", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "건강기능식품 · 테아닌함유제품 · 3g × 40포 (120g)", "text": "건강기능식품 · 테아닌함유제품 · 3g × 40포 (120g)", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-042bee5d", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "테아닌 200mg (1일 섭취량 당) · 곡류·조류·두류 복합효소 발효분말", "text": "테아닌 200mg (1일 섭취량 당) · 곡류·조류·두류 복합효소 발효분말", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-7bdb5518", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "인정 기능성 문구", "html": "\u003cspan>「스트레스로 인한 긴장 완화에 도움을 줄 수 있음」\u003c/span>", "text": "「스트레스로 인한 긴장 완화에 도움을 줄 수 있음」", "pages": ["취급 제품 — 자세히"], "keep": true, "lock": false, "addr": false}, {"k": "products-c967d37e", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "2006년 출시. 분홍 스틱.", "text": "2006년 출시. 분홍 스틱.", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-b59707ab", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "작은 제목", "html": "리버빔", "text": "리버빔", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-f6b9b91b", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "건강기능식품 · 캡슐", "text": "건강기능식품 · 캡슐", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-21eee668", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "밀크씨슬(카르두스 마리아누스) 추출물 · 식물성 캡슐", "text": "밀크씨슬(카르두스 마리아누스) 추출물 · 식물성 캡슐", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-844c1607", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "인정 기능성 문구", "html": "\u003cspan>「간 건강에 도움을 줄 수 있음」\u003c/span>", "text": "「간 건강에 도움을 줄 수 있음」", "pages": ["취급 제품 — 자세히"], "keep": true, "lock": false, "addr": false}, {"k": "products-31175124", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "2015년 출시.", "text": "2015년 출시.", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-9d5e3935", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "작은 제목", "html": "메모리엔", "text": "메모리엔", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-67f6e23a", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "건강기능식품", "text": "건강기능식품", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-00ed9611", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "은행잎추출물 · 셀레늄함유건조효모", "text": "은행잎추출물 · 셀레늄함유건조효모", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-e23f3247", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "인정 기능성 문구", "html": "\u003cspan>「기억력 개선에 도움을 줄 수 있음」\u003c/span>\u003cspan>「혈행 개선에 도움을 줄 수 있음」\u003c/span>\u003cspan>「유해산소로부터 세포를 보호하는 데 필요」(셀레늄)\u003c/span>", "text": "「기억력 개선에 도움을 줄 수 있음」「혈행 개선에 도움을 줄 수 있음」「유해산소로부터 세포를 보호하는 데 필요」(셀레늄)", "pages": ["취급 제품 — 자세히"], "keep": true, "lock": false, "addr": false}, {"k": "products-465bf5ae", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "2016년 출시.", "text": "2016년 출시.", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-f9758f0d", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "작은 제목", "html": "엠지칼 D", "text": "엠지칼 D", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-b4c345c9", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "건강기능식품 · 마그네슘＋칼슘＋비타민D", "text": "건강기능식품 · 마그네슘＋칼슘＋비타민D", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-1de1c132", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "칼슘 : 마그네슘 = 2 : 1 배합 + 비타민D", "text": "칼슘 : 마그네슘 = 2 : 1 배합 + 비타민D", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-fc80e6e0", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "인정 기능성 문구", "html": "\u003cspan>「뼈와 치아 형성에 필요」\u003c/span>\u003cspan>「신경과 근육 기능 유지에 필요」\u003c/span>\u003cspan>「골다공증 발생 위험 감소에 도움을 줌」\u003c/span>", "text": "「뼈와 치아 형성에 필요」「신경과 근육 기능 유지에 필요」「골다공증 발생 위험 감소에 도움을 줌」", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-465bf5ae-2", "g": "products@2", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "2016년 출시.", "text": "2016년 출시.", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-c468bbd8", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "큰 제목", "html": "일반식품 9종", "text": "일반식품 9종", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-a8065cab", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "작은 제목", "html": "미리안 차(茶)", "text": "미리안 차(茶)", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-c81e8603", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "일반식품 · 발효차", "text": "일반식품 · 발효차", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-9b69c71b", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "현미·구기자·결명자·산사자·복분자·마테 등 초본식물 24가지 발효 배양", "text": "현미·구기자·결명자·산사자·복분자·마테 등 초본식물 24가지 발효 배양", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-5845cc24", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "1990년대 출시. 좋은효소에서 가장 오래된 이름.", "text": "1990년대 출시. 좋은효소에서 가장 오래된 이름.", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-592fc435", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "작은 제목", "html": "미리안 이너자임", "text": "미리안 이너자임", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-a8e06ec3", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "일반식품 · 기타가공품", "text": "일반식품 · 기타가공품", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-d805b0b0", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "발아곡류 15곡 복합발효 + 제철 채소·과일 + 미역·다시마·톳 3차 발효", "text": "발아곡류 15곡 복합발효 + 제철 채소·과일 + 미역·다시마·톳 3차 발효", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-5d7f6ccf", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "2006년 출시.", "text": "2006년 출시.", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-d6d7d9e8", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "작은 제목", "html": "발효홍삼효소", "text": "발효홍삼효소", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-1394ca09", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "일반식품 · 곡류효소함유제품", "text": "일반식품 · 곡류효소함유제품", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-dbff8e10", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "6년근 홍삼 발효", "text": "6년근 홍삼 발효", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-31175124-2", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "2015년 출시.", "text": "2015년 출시.", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-55ec9a74", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "작은 제목", "html": "속편안 엔자임", "text": "속편안 엔자임", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-a8e06ec3-2", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "일반식품 · 기타가공품", "text": "일반식품 · 기타가공품", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-8121408e", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "진피·산사자·창출·울금·감초·복령·마 등 발효 배양", "text": "진피·산사자·창출·울금·감초·복령·마 등 발효 배양", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-636a3d7c", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "2014년 출시.", "text": "2014년 출시.", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-0cd32628", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "작은 제목", "html": "파비스 썬자임", "text": "파비스 썬자임", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-13b54643", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "일반식품 · 효소식품", "text": "일반식품 · 효소식품", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-b261a8c0", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "황기·마·모려·생지황·황정·인삼·하수오 등 24가지 복합 발효", "text": "황기·마·모려·생지황·황정·인삼·하수오 등 24가지 복합 발효", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-e866b40b", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "2013년 출시.", "text": "2013년 출시.", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-9cae1b2d", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "작은 제목", "html": "숨자임", "text": "숨자임", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-a8e06ec3-3", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "일반식품 · 기타가공품", "text": "일반식품 · 기타가공품", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-b4112d3d", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "맥문동·오미자·황기·인삼·모과 발효 + 도라지·블루베리·아사이베리·아로니아", "text": "맥문동·오미자·황기·인삼·모과 발효 + 도라지·블루베리·아사이베리·아로니아", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-39eaf7b4", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "2017년 출시.", "text": "2017년 출시.", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-69616a27", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "작은 제목", "html": "활동자임", "text": "활동자임", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-a8e06ec3-4", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "일반식품 · 기타가공품", "text": "일반식품 · 기타가공품", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-fe9e5f28", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "글루코사민·상어연골·보스웰리아·우슬 + 비타민·미네랄 3차 복합발효", "text": "글루코사민·상어연골·보스웰리아·우슬 + 비타민·미네랄 3차 복합발효", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-8fa170fb", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "2021년 출시. 가장 최근 제품.", "text": "2021년 출시. 가장 최근 제품.", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-821426fa", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "작은 제목", "html": "프로자임", "text": "프로자임", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-feb01c07", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "일반식품 · 식품유형 확인 중", "text": "일반식품 · 식품유형 확인 중", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-457517bb", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "화분 발효효소 · 버섯혼합추출발효물(운지·영지·표고·상황)", "text": "화분 발효효소 · 버섯혼합추출발효물(운지·영지·표고·상황)", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-9bd3c9bd", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "2010년 출시.", "text": "2010년 출시.", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-90e65eb1", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "작은 제목", "html": "쎌밸런스", "text": "쎌밸런스", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-e72aca9e", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "일반식품 · 식품유형 확인 중 · 액상", "text": "일반식품 · 식품유형 확인 중 · 액상", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-c026aac0", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "두충·우슬·마·구기자·산수유·숙지황·복령 추출 숙성액 + 아연·마그네슘", "text": "두충·우슬·마·구기자·산수유·숙지황·복령 추출 숙성액 + 아연·마그네슘", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-31175124-3", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "2015년 출시.", "text": "2015년 출시.", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "products-e25b49b8", "g": "products@3", "page": "products.html", "pname": "취급 제품 — 자세히", "kind": "문단", "html": "제조원 (주)한국파비스R&amp;D / 판매원 (주)좋은효소 / 소비자상담실 080-311-4175 · 섭취 방법과 주의사항은 제품 표시면을 따릅니다.", "text": "제조원 (주)한국파비스R&D / 판매원 (주)좋은효소 / 소비자상담실 080-311-4175 · 섭취 방법과 주의사항은 제품 표시면을 따릅니다.", "pages": ["취급 제품 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "about-4c906fc0", "g": "about@1", "page": "about.html", "pname": "대표 소개 — 자세히", "kind": "큰 제목", "html": "이훤용 · 더조은 15분샵 인천 부평점", "text": "이훤용 · 더조은 15분샵 인천 부평점", "pages": ["대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "about-977d66f6", "g": "about@1", "page": "about.html", "pname": "대표 소개 — 자세히", "kind": "소개 문단", "html": "은행과 일반기업에서 30년을 일했습니다. 숫자와 사람 사이에서 오래 일하다 보니\n        마지막에 남는 것은 건강이라는 생각이 들었고, 늦은 나이에 이 일을 시작했습니다.", "text": "은행과 일반기업에서 30년을 일했습니다. 숫자와 사람 사이에서 오래 일하다 보니 마지막에 남는 것은 건강이라는 생각이 들었고, 늦은 나이에 이 일을 시작했습니다.", "pages": ["대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "about-d2b135ac", "g": "about@1", "page": "about.html", "pname": "대표 소개 — 자세히", "kind": "소개 문단", "html": "인천 대건중·고등학교 총동문회장을 17·18대로 맡고 있습니다.\n        이 지역에서 나고 자라 학교 동문들 사이에 실명으로 서 있는 사람이라,\n        \u003cb>여기서 잘못 팔면 도망갈 곳이 없습니다.\u003c/b> 그게 이 가게의 유일한 담보입니다.", "text": "인천 대건중·고등학교 총동문회장을 17·18대로 맡고 있습니다. 이 지역에서 나고 자라 학교 동문들 사이에 실명으로 서 있는 사람이라, 여기서 잘못 팔면 도망갈 곳이 없습니다. 그게 이 가게의 유일한 담보입니다.", "pages": ["대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "about-262aef58", "g": "about@1", "page": "about.html", "pname": "대표 소개 — 자세히", "kind": "소개 문단", "html": "2023년에 아내와 함께 대구한의대학교에 입학해 지금은 대학원에 다니고 있습니다.\n        배우는 중이라 아는 척을 덜 하게 됩니다. 매장에는 아내와 둘이 있습니다.\n        오시면 두 사람이 같이 듣습니다. 급하게 권하지 않겠습니다.", "text": "2023년에 아내와 함께 대구한의대학교에 입학해 지금은 대학원에 다니고 있습니다. 배우는 중이라 아는 척을 덜 하게 됩니다. 매장에는 아내와 둘이 있습니다. 오시면 두 사람이 같이 듣습니다. 급하게 권하지 않겠습니다.", "pages": ["대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "about-47c5b6b5", "g": "about@2", "page": "about.html", "pname": "대표 소개 — 자세히", "kind": "큰 제목", "html": "이력", "text": "이력", "pages": ["대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "about-022c99f3", "g": "about@2", "page": "about.html", "pname": "대표 소개 — 자세히", "kind": "표 이름", "html": "학력", "text": "학력", "pages": ["대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "about-26051328", "g": "about@2", "page": "about.html", "pname": "대표 소개 — 자세히", "kind": "표 내용", "html": "인하대학교 경영학사\u003cbr>인하대학교 경영대학원 최고경영자과정 수료\u003cbr>2023년 대구한의대학교 입학 — 현재 대학원 재학", "text": "인하대학교 경영학사 / 인하대학교 경영대학원 최고경영자과정 수료 / 2023년 대구한의대학교 입학 — 현재 대학원 재학", "pages": ["대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "about-ccbb09a7", "g": "about@2", "page": "about.html", "pname": "대표 소개 — 자세히", "kind": "표 이름", "html": "경력", "text": "경력", "pages": ["대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "about-97080882", "g": "about@2", "page": "about.html", "pname": "대표 소개 — 자세히", "kind": "표 내용", "html": "은행·일반기업 30년 근무\u003cbr>인천 대건중·고등학교 총동문회장 (17·18대)\u003cbr>위경(㈜위대한경영자) 52기 수료", "text": "은행·일반기업 30년 근무 / 인천 대건중·고등학교 총동문회장 (17·18대) / 위경(㈜위대한경영자) 52기 수료", "pages": ["대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "about-f6575de2", "g": "about@2", "page": "about.html", "pname": "대표 소개 — 자세히", "kind": "표 이름", "html": "강의", "text": "강의", "pages": ["대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "about-2fd7c5dd", "g": "about@2", "page": "about.html", "pname": "대표 소개 — 자세히", "kind": "표 내용", "html": "건강·경영 강의 진행\u003cbr>인천 퍼스트병원에서 인체정화 프로그램 강의 진행", "text": "건강·경영 강의 진행 / 인천 퍼스트병원에서 인체정화 프로그램 강의 진행", "pages": ["대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "about-9ae21e48", "g": "about@2", "page": "about.html", "pname": "대표 소개 — 자세히", "kind": "표 이름", "html": "자격", "text": "자격", "pages": ["대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "about-fa8f0be0", "g": "about@2", "page": "about.html", "pname": "대표 소개 — 자세히", "kind": "표 내용", "html": "사회복지사 2급 · 요양보호사 2급 · 유치원정교사 2급\u003cbr>소방관리자격증 · 체형관리·피부미용관리사", "text": "사회복지사 2급 · 요양보호사 2급 · 유치원정교사 2급 / 소방관리자격증 · 체형관리·피부미용관리사", "pages": ["대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "about-572476b0", "g": "about@3", "page": "about.html", "pname": "대표 소개 — 자세히", "kind": "큰 제목", "html": "걷는 습관", "text": "걷는 습관", "pages": ["대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "about-9adff132", "g": "about@3", "page": "about.html", "pname": "대표 소개 — 자세히", "kind": "소개 문단", "html": "2002년 서울 하프마라톤을 완주했습니다. 2시간 25분 33초였습니다.\n         그때부터 걷는 습관이 남았습니다.", "text": "2002년 서울 하프마라톤을 완주했습니다. 2시간 25분 33초였습니다. 그때부터 걷는 습관이 남았습니다.", "pages": ["대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "about-c9885993", "g": "about@4", "page": "about.html", "pname": "대표 소개 — 자세히", "kind": "큰 제목", "html": "1+1 부부이야기", "text": "1+1 부부이야기", "pages": ["대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "about-8b8c9935", "g": "about@4", "page": "about.html", "pname": "대표 소개 — 자세히", "kind": "문단", "html": "\"우리는 &lt;1+1 부부&gt;입니다. 누가 하나 하면 같이 하는 사이입니다.\"", "text": "\"우리는 \u003c1+1 부부>입니다. 누가 하나 하면 같이 하는 사이입니다.\"", "pages": ["대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "about-5ace9ce4", "g": "about@4", "page": "about.html", "pname": "대표 소개 — 자세히", "kind": "소개 문단", "html": "대표가 쓴 전자책 『1+1 부부이야기』의 제목이 곧 저희 부부의 방식입니다.\n        하나를 사면 하나를 더 준다는 뜻이 아닙니다.\n        \u003cb>한 사람이 시작하면 다른 한 사람이 같이 한다는 뜻\u003c/b>입니다.\n        아내의 유아교육 일을 함께 하려고 유치원 정교사 2급 자격증을 같이 땄고, 사회복지사·요양보호사 공부도 함께 했습니다.\n        2023년에는 부부가 함께 대구한의대학교에 입학했습니다. 더블케어랩이라는 이름은 부부와 가족의 건강을 함께 돌본다는 뜻으로 지었습니다.\n        책에는 「부부는 서로 가르치는 존재가 아닌 서로 배우면서 같이 성장해가는 사이라고 생각합니다. 그리하여 배우자라 합니다」라고 적었습니다.", "text": "대표가 쓴 전자책 『1+1 부부이야기』의 제목이 곧 저희 부부의 방식입니다. 하나를 사면 하나를 더 준다는 뜻이 아닙니다. 한 사람이 시작하면 다른 한 사람이 같이 한다는 뜻입니다. 아내의 유아교육 일을 함께 하려고 유치원 정교사 2급 자격증을 같이 땄고, 사회복지사·요양보호사 공부도 함께 했습니다. 2023년에는 부부가 함께 대구한의대학교에 입학했습니다. 더블케어랩이라는 이름은 부부와 가족의 건강을 함께 돌본다는 뜻으로 지었습니다. 책에는 「부부는 서로 가르치는 존재가 아닌 서로 배우면서 같이 성장해가는 사이라고 생각합니다. 그리하여 배우자라 합니다」라고 적었습니다.", "pages": ["대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}, {"k": "about-dd36c37b", "g": "about@4", "page": "about.html", "pname": "대표 소개 — 자세히", "kind": "문단", "html": "『1+1 부부이야기 — 건강한 삶을 위한 좋은 선택, 효소』\u003cbr>\n        지은이 신성(新星) · 펴낸곳 와이스토리 · ISBN 979-11-88068-19-7\u003cbr>\n        읽어 보실 수 있는 곳은 매장에서 안내해 드립니다.", "text": "『1+1 부부이야기 — 건강한 삶을 위한 좋은 선택, 효소』 / 지은이 신성(新星) · 펴낸곳 와이스토리 · ISBN 979-11-88068-19-7 / 읽어 보실 수 있는 곳은 매장에서 안내해 드립니다.", "pages": ["대표 소개 — 자세히"], "keep": false, "lock": false, "addr": false}], "images": [{"key": "hero-wide-face.jpg", "path": "images/hero-wide-face.jpg?v=35", "alt": "미리안 스틱을 든 여성, 얼굴 위주", "page": "index.html", "pname": "홈 (첫 화면)", "gname": "1. 첫 화면"}, {"key": "hero-wide-full.jpg", "path": "images/hero-wide-full.jpg?v=35", "alt": "미리안 스틱을 든 여성, 전신", "page": "index.html", "pname": "홈 (첫 화면)", "gname": "1. 첫 화면"}, {"key": "owner-couple-color.jpg", "path": "images/owner-couple-color.jpg?v=35", "alt": "더블케어랩 대표 이훤용 부부", "page": "index.html", "pname": "홈 (첫 화면)", "gname": "5. 대표 소개"}, {"key": "web-device-big.png", "path": "images/web-device-big.png?v=35", "alt": "조은케어 JC-3000H 기기 정면. 화면에 30, 10, 15 분이 표시되어 있다", "page": "index.html", "pname": "홈 (첫 화면)", "gname": "2. 15분 케어"}, {"key": "life-slim-orchid.jpg", "path": "images/life-slim-orchid.jpg?v=35", "alt": "미리안 슬림 상자와 노란 스틱, 난초 옆", "page": "index.html", "pname": "홈 (첫 화면)", "gname": "4. 취급 제품"}, {"key": "life-clean-leaves.jpg", "path": "images/life-clean-leaves.jpg?v=35", "alt": "미리안 클린 상자와 파란 스틱, 초록 잎 위", "page": "index.html", "pname": "홈 (첫 화면)", "gname": "4. 취급 제품"}, {"key": "life-alphazyme-bowl.jpg", "path": "images/life-alphazyme-bowl.jpg?v=35", "alt": "미리안 알파자임 상자와 분홍 스틱, 초록 잎 앞", "page": "index.html", "pname": "홈 (첫 화면)", "gname": "4. 취급 제품"}, {"key": "product-clean-v3.jpg", "path": "images/product-clean-v3.jpg?v=35", "alt": "미리안 클린 상자", "page": "products.html", "pname": "취급 제품 — 자세히", "gname": "건강기능식품 6종"}, {"key": "product-slim-v3.jpg", "path": "images/product-slim-v3.jpg?v=35", "alt": "미리안 슬림 상자", "page": "products.html", "pname": "취급 제품 — 자세히", "gname": "건강기능식품 6종"}, {"key": "product-alphazyme-v3.jpg", "path": "images/product-alphazyme-v3.jpg?v=35", "alt": "미리안 알파자임 상자", "page": "products.html", "pname": "취급 제품 — 자세히", "gname": "건강기능식품 6종"}, {"key": "product-liverbeam-v3.jpg", "path": "images/product-liverbeam-v3.jpg?v=35", "alt": "리버빔 상자", "page": "products.html", "pname": "취급 제품 — 자세히", "gname": "건강기능식품 6종"}, {"key": "product-memoryen-v3.jpg", "path": "images/product-memoryen-v3.jpg?v=35", "alt": "메모리엔 상자", "page": "products.html", "pname": "취급 제품 — 자세히", "gname": "건강기능식품 6종"}, {"key": "product-mgcald-v3.jpg", "path": "images/product-mgcald-v3.jpg?v=35", "alt": "엠지칼 D 상자", "page": "products.html", "pname": "취급 제품 — 자세히", "gname": "건강기능식품 6종"}, {"key": "product-tea-v3.jpg", "path": "images/product-tea-v3.jpg?v=35", "alt": "미리안 차(茶)", "page": "products.html", "pname": "취급 제품 — 자세히", "gname": "일반식품 9종"}, {"key": "product-innerzyme-v3.jpg", "path": "images/product-innerzyme-v3.jpg?v=35", "alt": "미리안 이너자임", "page": "products.html", "pname": "취급 제품 — 자세히", "gname": "일반식품 9종"}, {"key": "product-hongsam-v3.jpg", "path": "images/product-hongsam-v3.jpg?v=35", "alt": "발효홍삼효소", "page": "products.html", "pname": "취급 제품 — 자세히", "gname": "일반식품 9종"}, {"key": "product-sokpyeonan-v3.jpg", "path": "images/product-sokpyeonan-v3.jpg?v=35", "alt": "속편안 엔자임", "page": "products.html", "pname": "취급 제품 — 자세히", "gname": "일반식품 9종"}, {"key": "product-sunzyme-v3.jpg", "path": "images/product-sunzyme-v3.jpg?v=35", "alt": "파비스 썬자임", "page": "products.html", "pname": "취급 제품 — 자세히", "gname": "일반식품 9종"}, {"key": "product-sumzyme.jpg", "path": "images/product-sumzyme.jpg?v=35", "alt": "숨자임", "page": "products.html", "pname": "취급 제품 — 자세히", "gname": "일반식품 9종"}, {"key": "product-hwaldongzyme.jpg", "path": "images/product-hwaldongzyme.jpg?v=35", "alt": "활동자임", "page": "products.html", "pname": "취급 제품 — 자세히", "gname": "일반식품 9종"}, {"key": "product-prozyme-v3.jpg", "path": "images/product-prozyme-v3.jpg?v=35", "alt": "프로자임", "page": "products.html", "pname": "취급 제품 — 자세히", "gname": "일반식품 9종"}, {"key": "product-cellbalance-v3.jpg", "path": "images/product-cellbalance-v3.jpg?v=35", "alt": "쎌밸런스", "page": "products.html", "pname": "취급 제품 — 자세히", "gname": "일반식품 9종"}, {"key": "owner-couple-web.jpg", "path": "images/owner-couple-web.jpg?v=35", "alt": "이훤용 대표와 배우자", "page": "about.html", "pname": "대표 소개 — 자세히", "gname": "1+1 부부이야기"}]};
+  var PIN_DEFAULT = '1017';
+  var K = 'cms_';                 // 글 한 칸
+  var XK = 'cmsx_';               // 「반영된 것에서 지워 주세요」 표시
+  var PUB_URL = '/api/publish';
+  var DEF_TEL = '010-8776-1017';
+  var DEF_ADDR = '인천광역시 부평구 안남로63번길 4 (부평동) 2층';
+
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var each = function (l, f) { Array.prototype.forEach.call(l, f); };
+  function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+  function del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  var CMS = window.CMS || null;
+  var pubData = (window.DCL_PUBLISHED && window.DCL_PUBLISHED.data) || {};
+  var pubMedia = (window.DCL_PUBLISHED && window.DCL_PUBLISHED.media) || {};
+
+  /* ================= 비밀번호 ================= */
+  function pin() { return get('cms_pin') || PIN_DEFAULT; }
+  if (get('cms_pin')) $('#pinHint').style.display = 'none';
+
+  $('#pinGo').onclick = function () {
+    if ($('#pin').value.trim() !== pin()) {
+      $('#pinErr').textContent = '비밀번호가 맞지 않습니다.';
+      $('#pin').value = ''; $('#pin').focus();
+      return;
+    }
+    $('#gate').style.display = 'none';
+    $('#app').style.display = 'block';
+    try { sessionStorage.setItem('cms_session', '1'); } catch (e) {}
+    boot();
+  };
+  $('#pin').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('#pinGo').click(); });
+  $('#pin').focus();
+
+  /* ================= 탭 ================= */
+  each(document.querySelectorAll('.tabs button'), function (b) {
+    b.onclick = function () { tab(b.getAttribute('data-tab')); };
+  });
+  function tab(name) {
+    each(document.querySelectorAll('.tabs button'), function (x) {
+      x.classList.toggle('on', x.getAttribute('data-tab') === name);
+    });
+    each(document.querySelectorAll('.panel'), function (x) { x.classList.remove('on'); });
+    var p = $('#p-' + name); if (p) p.classList.add('on');
+    window.scrollTo(0, 0);
+    if (name === 'pub') pubSummary();
+  }
+  $('#fPub').onclick = function (e) { e.preventDefault(); tab('pub'); };
+
+  var stT = null;
+  function state(msg, bad) {
+    var el = $('#state');
+    el.textContent = msg;
+    el.style.color = bad ? '#FF9C8C' : '#8FE0AE';
+    clearTimeout(stT);
+    stT = setTimeout(function () { el.textContent = '저절로 저장됩니다'; el.style.color = '#B8B8B8'; }, 4000);
+  }
+  $('#fSave').onclick = function () {
+    each(document.querySelectorAll('.ed'), function (ed) { ed.blur(); });
+    state('저장했습니다');
+  };
+
+  /* ================= 부팅 ================= */
+  function boot() {
+    if (!CMS) {
+      alert('cms.js 파일을 읽지 못했습니다.\n관리자 페이지와 cms.js 가 같은 폴더에 있어야 합니다.');
+    }
+    fillPageSel();
+    renderGroups();
+    renderPhotos();
+    usage();
+    $('#setTel').value = get('cms_set_tel') || (pubData['@tel'] || '');
+    $('#setAddr').value = get('cms_set_addr') || (pubData['@addr'] || '');
+    liveRow();
+    topSum();
+  }
+
+  function fillPageSel() {
+    var s = $('#pgSel');
+    D.pages.forEach(function (p) {
+      var n = D.fields.filter(function (f) { return f.page === p.file; }).length;
+      if (!n) return;
+      var o = document.createElement('option');
+      o.value = p.file; o.textContent = p.name + ' (' + n + '칸)';
+      s.appendChild(o);
+    });
+    s.onchange = filter;
+  }
+
+  function topSum() {
+    var n = D.fields.filter(function (f) { return get(K + f.k) !== null; }).length;
+    var m = D.images.filter(function (im) { return get(K + 'img_' + im.key); }).length;
+    $('#topSum').textContent =
+      '글 ' + D.fields.length + '칸 · 사진 ' + D.images.length + '장' +
+      (n + m ? '  |  고치신 곳 글 ' + n + '곳 · 사진 ' + m + '장' : '');
+  }
+
+  /* ================= 글 ================= */
+  function cssId(k) { return k.replace(/([^a-zA-Z0-9_-])/g, '\\$1'); }
+
+  function renderGroups() {
+    var box = $('#groups');
+    box.innerHTML = '';
+    D.groups.forEach(function (g) {
+      var list = D.fields.filter(function (f) { return f.g === g.id; });
+      if (!list.length) return;
+      var d = document.createElement('details');
+      d.className = 'grp';
+      d.setAttribute('data-page', g.page);
+      d.innerHTML = '<summary><span class="ttl">' + esc(g.name) + '</span>' +
+                    '<span class="pg">' + esc(g.pname) + '</span>' +
+                    '<span class="badge g cnt">' + list.length + '칸</span>' +
+                    '<span class="badge ch" style="display:none;"></span></summary>' +
+                    '<div class="in"></div>';
+      var inn = $('.in', d);
+      list.forEach(function (f) { inn.appendChild(fieldEl(f)); });
+      box.appendChild(d);
+    });
+    badges();
+  }
+
+  function fieldEl(f) {
+    var el = document.createElement('div');
+    el.className = 'fld';
+    el.id = 'f-' + f.k;
+    var saved = get(K + f.k);
+    if (saved !== null) el.classList.add('changed');
+
+    var tags = '<span class="tag">' + esc(f.kind) + '</span>';
+    if (f.pages.length > 1) tags += '<span class="tag">' + f.pages.length + '개 페이지 공통</span>';
+    if (f.keep) tags += '<span class="tag keep">지우면 안 되는 문구</span>';
+    if (f.lock) tags += '<span class="tag lock">법정 고지문 · 비우면 되돌아감</span>';
+    if (f.addr) tags += '<span class="tag addr">주소 — 「전화·주소」에서 고치세요</span>';
+
+    el.innerHTML =
+      '<div class="lab">' + tags + '</div>' +
+      '<div class="ed" contenteditable="true" spellcheck="false"></div>' +
+      '<div class="msg"></div>' +
+      '<div class="act row"><button class="b b-sm undo">이 칸 처음으로</button></div>';
+
+    var ed = $('.ed', el);
+    ed.innerHTML = (saved !== null) ? saved
+                 : (pubData[f.k] !== undefined && pubData[f.k] !== null) ? pubData[f.k]
+                 : f.html;
+
+    var t = null;
+    ed.addEventListener('input', function () {
+      clearTimeout(t); t = setTimeout(function () { save(f, el, ed); }, 700);
+    });
+    ed.addEventListener('blur', function () { clearTimeout(t); save(f, el, ed); });
+    ed.addEventListener('paste', function (e) {           // 서식 붙여넣기 방지
+      e.preventDefault();
+      var txt = (e.clipboardData || window.clipboardData).getData('text');
+      document.execCommand('insertText', false, txt);
+    });
+
+    $('.undo', el).onclick = function () {
+      if (!confirm('이 칸을 처음 글로 되돌립니다. 괜찮으실까요?')) return;
+      del(K + f.k);
+      if (pubData[f.k] !== undefined) set(XK + f.k, '1');   // 반영된 것에서도 빼 달라는 표시
+      ed.innerHTML = f.html;
+      el.classList.remove('changed');
+      warnFor(f, el, ed);
+      badges(); topSum(); state('되돌렸습니다');
+    };
+
+    warnFor(f, el, ed, true);
+    return el;
+  }
+
+  function warn(el, msg, kind) {
+    var m = $('.msg', el);
+    if (!msg) { m.className = 'msg'; m.innerHTML = ''; return false; }
+    m.className = 'msg show ' + (kind || 'bad');
+    m.innerHTML = msg;
+    return true;
+  }
+
+  /* 한 칸을 검사한다 → 문제가 있으면 true */
+  function warnFor(f, el, ed, quiet) {
+    var html = ed.innerHTML;
+    var text = ed.textContent.replace(/\s+/g, ' ').trim();
+    var msgs = [];
+
+    if (f.keep && html.indexOf('도움을 줄 수 있음') < 0) {
+      msgs.push('<b>⚠ 「도움을 줄 수 있음」을 지우시면 법 위반입니다.</b><br>' +
+                '이 문장은 제품 상자 뒷면에 적힌 그대로 두셔야 합니다. 요약하거나 쉬운 말로 풀어 쓰는 것도 안 됩니다.');
+    }
+    if (f.lock && !text) {
+      msgs.push('<b>이 안내문은 법으로 넣게 되어 있어 비울 수 없습니다.</b> 원래 내용으로 되돌렸습니다.');
+    }
+    if (f.addr) {
+      msgs.push('<b>주소는 「전화·주소」 화면에서 고쳐 주세요.</b> 거기서 고치셔야 지도 링크까지 함께 바뀝니다.');
+    }
+    if (CMS) {
+      var hit = CMS.check(text);
+      if (hit.length) {
+        msgs.push('<b>⚠ 쓰면 안 되는 말이 들어 있습니다</b><br>' +
+          hit.map(function (h) {
+            return '「<b>' + esc(h.w) + '</b>」 — ' + esc(h.why);
+          }).join('<br>') +
+          '<br>저장은 되었지만 그대로 두시면 안 됩니다.');
+      }
+    }
+    if (!msgs.length) return warn(el, '');
+    var kind = (f.addr && msgs.length === 1) ? 'hold' : 'bad';
+    warn(el, msgs.join('<hr style="border:0;border-top:1px solid rgba(0,0,0,.12);margin:8px 0">'), kind);
+    return true;
+  }
+
+  function save(f, el, ed) {
+    var text = ed.textContent.replace(/\s+/g, ' ').trim();
+
+    /* 법정 고지문 자동 복구 — 비우면 원문으로 되돌린다 */
+    if (f.lock && !text) {
+      ed.innerHTML = f.html;
+      del(K + f.k);
+      el.classList.remove('changed');
+      warn(el, '<b>이 안내문은 법으로 넣게 되어 있어 비울 수 없습니다.</b> 원래 내용으로 되돌렸습니다.', 'hold');
+      badges(); topSum(); state('되돌렸습니다');
+      return;
+    }
+
+    var html = ed.innerHTML;
+    if (html === f.html) {                 // 처음 글과 같아지면 저장할 것이 없다
+      del(K + f.k);
+      el.classList.remove('changed');
+    } else {
+      if (!set(K + f.k, html)) { state('저장 공간이 부족합니다', true); warn(el, '<b>저장 공간이 부족해 저장하지 못했습니다.</b> 바꾸신 사진을 몇 장 되돌려 주세요.'); return; }
+      del(XK + f.k);
+      el.classList.add('changed');
+      state('저장했습니다');
+    }
+    warnFor(f, el, ed);
+    badges(); topSum();
+  }
+
+  function badges() {
+    each(document.querySelectorAll('details.grp'), function (d) {
+      var n = 0, bad = 0;
+      each(d.querySelectorAll('.fld'), function (x) {
+        if (x.classList.contains('changed')) n++;
+        if ($('.msg', x).classList.contains('bad')) bad++;
+      });
+      var b = $('.badge.ch', d);
+      if (n || bad) {
+        b.style.display = '';
+        b.textContent = (n ? n + '곳 고침' : '') + (n && bad ? ' · ' : '') + (bad ? '경고 ' + bad : '');
+        b.style.background = bad ? '#8A1F11' : '#C08A00';
+      } else b.style.display = 'none';
+    });
+  }
+
+  function filter() {
+    var q = ($('#q').value || '').trim().toLowerCase();
+    var pg = $('#pgSel').value;
+    var only = $('#onlyChanged').checked;
+    D.fields.forEach(function (f) {
+      var el = document.getElementById('f-' + f.k); if (!el) return;
+      var ed = $('.ed', el);
+      var hay = (ed.textContent + ' ' + f.kind + ' ' + f.pname).toLowerCase();
+      var ok = (!q || hay.indexOf(q) >= 0) &&
+               (!pg || f.page === pg) &&
+               (!only || el.classList.contains('changed'));
+      el.classList.toggle('hide', !ok);
+    });
+    each(document.querySelectorAll('details.grp'), function (d) {
+      var any = false;
+      each(d.querySelectorAll('.fld'), function (x) { if (!x.classList.contains('hide')) any = true; });
+      d.style.display = any ? '' : 'none';
+      if (any && (q || only || pg)) d.open = true;
+    });
+  }
+  $('#q').addEventListener('input', filter);
+  $('#onlyChanged').addEventListener('change', filter);
+  $('#openAll').onclick = function () { each(document.querySelectorAll('details.grp'), function (d) { d.open = true; }); };
+  $('#shutAll').onclick = function () { each(document.querySelectorAll('details.grp'), function (d) { d.open = false; }); };
+
+  /* 전체 검사 */
+  function scanAll() {
+    var bad = [];
+    D.fields.forEach(function (f) {
+      var el = document.getElementById('f-' + f.k); if (!el) return;
+      var ed = $('.ed', el);
+      var html = ed.innerHTML, text = ed.textContent.replace(/\s+/g, ' ').trim();
+      var why = [];
+      if (f.keep && html.indexOf('도움을 줄 수 있음') < 0) why.push('「도움을 줄 수 있음」이 빠졌습니다');
+      if (f.lock && !text) why.push('법정 고지문이 비었습니다');
+      if (CMS) CMS.check(text).forEach(function (h) { why.push('「' + h.w + '」 — ' + h.why); });
+      if (why.length) bad.push({ f: f, why: why, now: text });
+    });
+    return bad;
+  }
+
+  $('#checkAll').onclick = function () {
+    var bad = scanAll();
+    var r = $('#report');
+    r.style.display = 'block';
+    if (!bad.length) {
+      r.className = 'card';
+      r.style.borderColor = '#C4DFCC'; r.style.background = '#EAF3EC';
+      r.innerHTML = '<h3 style="color:#2A6B45;margin:0;">문제 없습니다</h3>' +
+                    '<p style="margin:6px 0 0;">쓰면 안 되는 말이나 빠진 문구가 없습니다.</p>';
+    } else {
+      r.className = 'card danger';
+      r.style.borderColor = ''; r.style.background = '';
+      r.innerHTML = '<h3>고치셔야 할 곳이 ' + bad.length + '군데 있습니다</h3><ul class="plain">' +
+        bad.map(function (b) {
+          return '<li><a href="#f-' + esc(b.f.k) + '">' + esc(b.f.pname) + ' — ' +
+                 esc((b.now || b.f.text).slice(0, 28)) + '…</a><br>' +
+                 '<span style="font-size:14px;">' + esc(b.why.join(' / ')) + '</span></li>';
+        }).join('') + '</ul>';
+      each(document.querySelectorAll('details.grp'), function (d) { d.open = true; });
+    }
+    r.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    badges();
+  };
+
+  /* ================= 사진 ================= */
+  function renderPhotos() {
+    var box = $('#photos');
+    box.innerHTML = '';
+    D.images.forEach(function (im) {
+      var saved = get(K + 'img_' + im.key);
+      var published = pubMedia[im.key];
+      var c = document.createElement('div');
+      c.className = 'ph' + (saved ? ' changed' : '');
+      c.innerHTML =
+        '<div class="pic"><img alt=""></div>' +
+        '<div class="meta">' +
+          '<div class="nm">' + esc(im.alt) + '</div>' +
+          '<div class="sub">' + esc(im.pname) + ' · ' + esc(im.gname) + '<br>' + esc(im.key) +
+            (saved ? ' <span class="badge">바꿈 (아직 반영 안 됨)</span>' : '') + '</div>' +
+          '<div class="row">' +
+            '<button class="b b-go b-sm pick">사진 고르기</button>' +
+            (saved ? '<button class="b b-sm undo">되돌리기</button>' : '') +
+          '</div><div class="msg"></div>' +
+        '</div>';
+      var img = $('img', c);
+      img.src = saved || published || im.path;
+      img.onerror = function () {
+        img.remove();
+        $('.pic', c).innerHTML = '<span class="none">사진을 찾지 못했습니다<br>' + esc(im.path) + '</span>';
+      };
+      $('.pick', c).onclick = function () {
+        var f = document.createElement('input');
+        f.type = 'file'; f.accept = 'image/*';
+        f.onchange = function () {
+          if (!f.files || !f.files[0]) return;
+          state('사진을 줄이는 중입니다…');
+          CMS.saveImage(im.key, f.files[0], function (ok, msg) {
+            var m = $('.msg', c);
+            if (!ok) { m.className = 'msg show bad'; m.textContent = msg; state('사진을 저장하지 못했습니다', true); return; }
+            del(XK + 'img_' + im.key);
+            renderPhotos(); usage(); topSum(); state('사진을 바꿨습니다');
+          });
+        };
+        f.click();
+      };
+      var u = $('.undo', c);
+      if (u) u.onclick = function () {
+        if (!confirm('이 사진을 처음 사진으로 되돌립니다. 괜찮으실까요?')) return;
+        del(K + 'img_' + im.key);
+        if (published) set(XK + 'img_' + im.key, '1');
+        renderPhotos(); usage(); topSum(); state('되돌렸습니다');
+      };
+      box.appendChild(c);
+    });
+  }
+
+  function usage() {
+    var n = CMS ? CMS.usage() : 0;
+    var pct = Math.min(100, Math.round(n / (5 * 1024 * 1024) * 100));
+    var bar = $('#uBar');
+    bar.classList.toggle('full', pct >= 80);
+    $('i', bar).style.width = pct + '%';
+    $('#uTxt').innerHTML = '약 ' + (n / 1024 / 1024).toFixed(2) + 'MB 쓰는 중 (쓸 수 있는 양은 약 5MB) — ' + pct + '%' +
+      (pct >= 80 ? ' <b style="color:#8A1F11;">거의 찼습니다. 사진을 더 바꾸시면 저장이 안 될 수 있습니다.</b>' : '');
+  }
+
+  /* ================= 전화·주소 ================= */
+  $('#telSave').onclick = function () {
+    var v = $('#setTel').value.trim();
+    if (!/^[0-9\-]{9,15}$/.test(v)) { alert('전화번호는 숫자와 - 만 넣어 주세요.\n예) 010-8776-1017'); return; }
+    set('cms_set_tel', v); del(XK + 'set_tel'); state('전화번호를 저장했습니다'); topSum();
+    alert('저장했습니다.\n홈페이지의 모든 전화 단추가 ' + v + ' 로 바뀝니다.\n\n손님 화면에도 보이게 하려면 「웹에 반영하기」를 눌러 주세요.');
+  };
+  $('#telUndo').onclick = function () {
+    del('cms_set_tel'); if (pubData['@tel']) set(XK + 'set_tel', '1');
+    $('#setTel').value = ''; state('되돌렸습니다'); topSum();
+  };
+  $('#addrSave').onclick = function () {
+    var v = $('#setAddr').value.trim();
+    if (v.length < 6) { alert('주소를 끝까지 넣어 주세요.\n예) 인천광역시 부평구 안남로63번길 4 (부평동) 2층'); return; }
+    set('cms_set_addr', v); del(XK + 'set_addr'); state('주소를 저장했습니다'); topSum();
+    alert('저장했습니다.\n「오시는 길」의 주소와 지도 링크가 바뀝니다.\n\n' +
+          '⚠ 검색 결과에 나오는 소개 글과 가게 정보(JSON-LD)는 자동으로 바뀌지 않습니다.\n' +
+          '주소를 정말로 바꾸실 때는 만든 곳에 한 번 알려 주십시오.');
+  };
+  $('#addrUndo').onclick = function () {
+    del('cms_set_addr'); if (pubData['@addr']) set(XK + 'set_addr', '1');
+    $('#setAddr').value = ''; state('되돌렸습니다'); topSum();
+  };
+
+  /* ================= 웹에 반영하기 ================= */
+  function localText() {
+    var o = {};
+    D.fields.forEach(function (f) {
+      var v = get(K + f.k);
+      if (v !== null) o[f.k] = v;
+    });
+    return o;
+  }
+  function localMedia() {
+    var o = {};
+    D.images.forEach(function (im) {
+      var v = get(K + 'img_' + im.key);
+      if (v) o[im.key] = v;
+    });
+    return o;
+  }
+  /* 반영에 보낼 글 = 이미 반영된 것 + 이 컴퓨터에서 고친 것 − 되돌린 것 */
+  function outData() {
+    var o = {};
+    Object.keys(pubData).forEach(function (k) { o[k] = pubData[k]; });
+    var mine = localText();
+    Object.keys(mine).forEach(function (k) { o[k] = mine[k]; });
+    D.fields.forEach(function (f) { if (get(XK + f.k)) delete o[f.k]; });
+
+    var tel = get('cms_set_tel'); var addr = get('cms_set_addr');
+    if (tel) o['@tel'] = tel; else if (get(XK + 'set_tel')) delete o['@tel'];
+    if (addr) o['@addr'] = addr; else if (get(XK + 'set_addr')) delete o['@addr'];
+    return o;
+  }
+  function outMediaJobs() {
+    var jobs = [];
+    var mine = localMedia();
+    Object.keys(mine).forEach(function (k) { jobs.push([k, mine[k]]); });
+    D.images.forEach(function (im) { if (get(XK + 'img_' + im.key)) jobs.push([im.key, '']); });
+    return jobs;
+  }
+
+  function pubSummary() {
+    var t = Object.keys(localText()).length;
+    var rm = D.fields.filter(function (f) { return get(XK + f.k); }).length;
+    var jobs = outMediaJobs();
+    $('#pubT').textContent = t ? (t + '곳 고침' + (rm ? ' · ' + rm + '곳 되돌림' : '')) : '고치신 글 없음';
+    $('#pubI').textContent = jobs.length ? (jobs.length + '장') : '바꾸신 사진 없음';
+    var s = [];
+    if (get('cms_set_tel')) s.push('전화 ' + get('cms_set_tel'));
+    if (get('cms_set_addr')) s.push('주소 바꿈');
+    $('#pubS').textContent = s.length ? s.join(' · ') : '바꾸신 것 없음';
+  }
+
+  $('#pubCheck').onclick = function () {
+    var bad = scanAll();
+    var m = $('#pubMsg');
+    if (!bad.length) {
+      m.className = 'msg show ok';
+      m.innerHTML = '<b>문제 없습니다.</b> 쓰면 안 되는 말이나 빠진 문구가 없습니다.';
+    } else {
+      m.className = 'msg show bad';
+      m.innerHTML = '<b>고치셔야 할 곳이 ' + bad.length + '군데 있습니다.</b><br>' +
+        bad.slice(0, 12).map(function (b) {
+          return '· ' + esc(b.f.pname) + ' 「' + esc((b.now || b.f.text).slice(0, 20)) + '…」 — ' + esc(b.why[0]);
+        }).join('<br>') +
+        (bad.length > 12 ? '<br>… 그 밖에 ' + (bad.length - 12) + '군데' : '') +
+        '<br><br>「글 고치기」에서 고쳐 주세요. 그래도 반영하시겠다면 아래를 체크하시면 됩니다.';
+    }
+    $('#pubAgree').checked = false;
+    $('#pubGo').disabled = true;
+  };
+  $('#pubAgree').onchange = function () { $('#pubGo').disabled = !this.checked; };
+
+  $('#pubGo').onclick = function () {
+    var data = outData();
+    var jobs = outMediaJobs();
+    if (!confirm('고치신 내용을 손님 화면에도 나가게 합니다.\n\n' +
+                 '글 ' + Object.keys(data).length + '칸 · 사진 ' + jobs.length + '장\n\n' +
+                 '반영할까요?')) return;
+
+    var btn = $('#pubGo'), out = $('#pubOut');
+    btn.disabled = true;
+    out.className = 'msg show hold';
+    out.innerHTML = '보내는 중입니다… 창을 닫지 마세요.';
+
+    /* 사진은 한 번에 3MB 씩 나눠 보낸다 (버셀 요청 한도 4.5MB) */
+    var batches = [], cur = {}, size = 0;
+    jobs.forEach(function (j) {
+      var n = (j[1] || '').length;
+      if (size + n > 3 * 1024 * 1024 && Object.keys(cur).length) { batches.push(cur); cur = {}; size = 0; }
+      cur[j[0]] = j[1]; size += n;
+    });
+    if (Object.keys(cur).length) batches.push(cur);
+    if (!batches.length) batches.push({});
+
+    var i = 0;
+    function step() {
+      var body = { pin: pin(), media: batches[i] };
+      if (i === 0) { body.data = data; body.message = '관리자 페이지에서 내용 수정'; }
+      fetch(PUB_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      }).then(function (r) {
+        return r.json().catch(function () { return { ok: false, error: '서버가 이상한 답을 보냈습니다 (' + r.status + ')' }; });
+      }).then(function (j) {
+        if (!j || !j.ok) throw new Error((j && j.error) || '알 수 없는 문제');
+        i++;
+        if (i < batches.length) {
+          out.innerHTML = '보내는 중입니다… (' + i + '/' + batches.length + ')';
+          step();
+          return;
+        }
+        out.className = 'msg show ok';
+        out.innerHTML = '<b>반영했습니다.</b><br>' +
+          '홈페이지에 실제로 보이기까지 1~2분 걸립니다.<br>' +
+          '화면이 그대로면 <b>Ctrl + Shift + R</b> 을 눌러 주세요.';
+        /* 되돌림 표시는 반영됐으니 지운다 */
+        try {
+          var kill = [];
+          for (var n = 0; n < localStorage.length; n++) {
+            var k = localStorage.key(n);
+            if (k.indexOf(XK) === 0) kill.push(k);
+          }
+          kill.forEach(del);
+        } catch (e) {}
+        btn.disabled = false;
+        state('웹에 반영했습니다');
+      }).catch(function (e) {
+        out.className = 'msg show bad';
+        var msg = String(e.message || e);
+        if (location.protocol === 'file:') {
+          msg = '지금은 파일을 열어 보고 계신 상태(file:///)라 반영할 수 없습니다.\n' +
+                '인터넷 주소로 홈페이지를 열고 다시 해 주세요.';
+        }
+        out.innerHTML = '<b>반영하지 못했습니다.</b><br>' + esc(msg) +
+          '<br><br>이 글씨를 그대로 찍어서 만든 곳에 보내 주시면 봐 드리겠습니다.';
+        btn.disabled = false;
+        state('반영하지 못했습니다', true);
+      });
+    }
+    step();
+  };
+
+  /* ================= 백업 ================= */
+  $('#expBtn').onclick = function () {
+    var o = {};
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if ((k.indexOf('cms_') === 0 || k.indexOf(XK) === 0) && k !== 'cms_until') o[k] = localStorage.getItem(k);
+      }
+    } catch (e) {}
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(o)], { type: 'application/json' }));
+    var d = new Date();
+    a.download = '홈페이지_수정본_백업_' + d.getFullYear() +
+      ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2) + '.json';
+    a.click();
+    state('백업 파일을 내려받았습니다');
+  };
+  $('#impBtn').onclick = function () { $('#impFile').click(); };
+  $('#impFile').onchange = function () {
+    var f = $('#impFile').files[0]; if (!f) return;
+    var r = new FileReader();
+    r.onload = function (e) {
+      var o;
+      try { o = JSON.parse(e.target.result); } catch (err) { alert('백업 파일이 아닙니다.'); return; }
+      if (!o || typeof o !== 'object') { alert('백업 파일이 아닙니다.'); return; }
+      if (!confirm('백업을 불러오면 지금 고쳐 놓으신 내용이 백업 내용으로 바뀝니다.\n계속할까요?')) return;
+      Object.keys(o).forEach(function (k) {
+        if (k.indexOf('cms_') === 0 || k.indexOf(XK) === 0) set(k, o[k]);
+      });
+      alert('불러왔습니다.');
+      location.reload();
+    };
+    r.readAsText(f);
+  };
+  $('#pinSave').onclick = function () {
+    var v = $('#newPin').value.trim();
+    if (!/^[0-9]{4,8}$/.test(v)) { alert('숫자 4자리(길게는 8자리까지)로 넣어 주세요.'); return; }
+    set('cms_pin', v);
+    $('#pinHint').style.display = 'none';
+    $('#newPin').value = '';
+    alert('비밀번호를 ' + v + ' 로 바꿨습니다. 잊지 마세요.\n\n' +
+          '⚠ 이 컴퓨터에서만 바뀝니다. 「웹에 반영하기」에 쓰는 비밀번호도 함께 바꾸시려면 만든 곳에 알려 주십시오.');
+  };
+  $('#resetAll').onclick = function () {
+    if (!confirm('고치신 글·사진·전화·주소를 전부 처음 상태로 되돌립니다.\n정말 되돌릴까요?')) return;
+    if (!confirm('되돌리면 다시 살릴 수 없습니다.\n(백업을 받아 두셨다면 나중에 되살릴 수 있습니다)\n\n그래도 되돌릴까요?')) return;
+    var kill = [];
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if ((k.indexOf('cms_') === 0 || k.indexOf(XK) === 0) && k !== 'cms_pin') kill.push(k);
+      }
+      kill.forEach(del);
+    } catch (e) {}
+    alert('처음 상태로 되돌렸습니다.\n손님 화면도 되돌리시려면 「웹에 반영하기」를 한 번 눌러 주세요.');
+    location.reload();
+  };
+
+  /* ================= 화면에서 바로 고치기 ================= */
+  function liveRow() {
+    var row = $('#liveRow');
+    row.innerHTML = '';
+    D.pages.forEach(function (p) {
+      var b = document.createElement('button');
+      b.className = 'b b-sm';
+      b.textContent = p.name;
+      b.onclick = function () {
+        set('cms_until', String(Date.now() + 30 * 60 * 1000));
+        try { sessionStorage.setItem('cms_session', '1'); } catch (e) {}
+        location.href = p.file + '?edit=1';
+      };
+      row.appendChild(b);
+    });
+  }
+})();
+</script>
+</body>
+</html>
